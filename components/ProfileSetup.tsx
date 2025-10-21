@@ -101,8 +101,10 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ onProfileCreate }) => {
             if (!success) {
                 setErrors(prev => ({ ...prev, email: "This email address is already registered."}));
                 setIsSubmitting(false);
+            } else {
+                // Reset submitting state even on success to ensure clean state
+                setIsSubmitting(false);
             }
-            // If signup is successful, the view will change automatically.
         } else {
              setIsSubmitting(false);
         }
