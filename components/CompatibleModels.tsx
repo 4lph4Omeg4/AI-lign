@@ -1,5 +1,5 @@
-import React from 'react';
-import { UserProfile } from '../types';
+import React, { useEffect, useRef } from 'react';
+import { UserProfile, Message } from '../types';
 import Header from './Header';
 
 interface CompatibleModelsProps {
@@ -8,6 +8,8 @@ interface CompatibleModelsProps {
     onGoBack: () => void;
     onBlock: (profile: UserProfile) => void;
     onEditProfile: () => void;
+    conversations: Record<string, Message[]>;
+    currentUserId: number;
 }
 
 const BanIcon: React.FC = () => (
@@ -23,7 +25,42 @@ const EditIcon: React.FC = () => (
 );
 
 
-const CompatibleModels: React.FC<CompatibleModelsProps> = ({ matches, onStartConversation, onGoBack, onBlock, onEditProfile }) => {
+const CompatibleModels: React.FC<CompatibleModelsProps> = ({ matches, onStartConversation, onGoBack, onBlock, onEditProfile, conversations, currentUserId }) => {
+    const previousMessageCounts = useRef<Record<string, number>>({});
+
+    // Get unread message count for a specific match
+    const getUnreadCount = (matchId: number): number => {
+        const conversationId = [currentUserId, matchId].sort().join('-');
+        const messages = conversations[conversationId] || [];
+        return messages.filter(msg => msg.sender === 'matched' && !msg.read).length;
+    };
+
+    // Monitor conversations for new messages and show notifications
+    useEffect(() => {
+        matches.forEach(match => {
+            const conversationId = [currentUserId, match.id].sort().join('-');
+            const messages = conversations[conversationId] || [];
+            const currentCount = messages.length;
+            const previousCount = previousMessageCounts.current[conversationId] || 0;
+
+            // If there's a new message from the matched user
+            if (currentCount > previousCount && messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage.sender === 'matched') {
+                    // Show notification for new message
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification(`New message from ${match.name}`, {
+                            body: lastMessage.text?.substring(0, 50) + (lastMessage.text && lastMessage.text.length > 50 ? '...' : '') || 'Sent a photo',
+                            icon: match.imageUrl,
+                        });
+                    }
+                }
+            }
+
+            previousMessageCounts.current[conversationId] = currentCount;
+        });
+    }, [conversations, matches, currentUserId]);
+
     return (
         <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col">
             <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/50 to-blue-900/70"></div>
@@ -49,30 +86,43 @@ const CompatibleModels: React.FC<CompatibleModelsProps> = ({ matches, onStartCon
                        
                         {matches.length > 0 ? (
                              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-                                {matches.map(profile => (
-                                    <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg animate-fade-in-up">
-                                        <div className="flex items-center">
-                                            <img src={profile.imageUrl} alt={profile.name} className="w-12 h-12 rounded-full object-cover border-2 border-fuchsia-500" />
-                                            <div className="ml-4">
-                                                <h3 className="font-semibold flex items-center">
-                                                    {profile.name}
-                                                </h3>
-                                                <p className="text-sm text-gray-400">{profile.age} years old</p>
+                                {matches.map(profile => {
+                                    const unreadCount = getUnreadCount(profile.id);
+                                    return (
+                                        <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg animate-fade-in-up">
+                                            <div className="flex items-center">
+                                                <div className="relative">
+                                                    <img src={profile.imageUrl} alt={profile.name} className="w-12 h-12 rounded-full object-cover border-2 border-fuchsia-500" />
+                                                    {unreadCount > 0 && (
+                                                        <div className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-pink-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-gray-900 animate-pulse">
+                                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="ml-4">
+                                                    <h3 className="font-semibold flex items-center">
+                                                        {profile.name}
+                                                        {unreadCount > 0 && (
+                                                            <span className="ml-2 text-xs text-pink-400 font-normal">• New message{unreadCount > 1 ? 's' : ''}</span>
+                                                        )}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-400">{profile.age} years old</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <button 
+                                                    onClick={() => onStartConversation(profile)}
+                                                    className="font-semibold text-sm py-2 px-4 rounded-lg transition-all bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white hover:shadow-md hover:shadow-cyan-500/40"
+                                                >
+                                                    Chat
+                                                </button>
+                                                <button onClick={() => onBlock(profile)} title={`Block ${profile.name}`} className="p-2 rounded-full text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-colors">
+                                                    <BanIcon />
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="flex items-center space-x-2">
-                                            <button 
-                                                onClick={() => onStartConversation(profile)}
-                                                className="font-semibold text-sm py-2 px-4 rounded-lg transition-all bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white hover:shadow-md hover:shadow-cyan-500/40"
-                                            >
-                                                Chat
-                                            </button>
-                                            <button onClick={() => onBlock(profile)} title={`Block ${profile.name}`} className="p-2 rounded-full text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-colors">
-                                                <BanIcon />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                              <div className="text-center py-12 text-gray-500 font-mono">

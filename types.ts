@@ -10,6 +10,7 @@ export interface UserProfile {
   likes: number[];
   dislikes: number[];
   matches: number[];
+  matchTimestamps?: Record<number, string>; // matchId -> ISO timestamp
 }
 
 export interface Message {

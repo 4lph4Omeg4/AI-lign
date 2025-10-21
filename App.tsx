@@ -109,6 +109,13 @@ const App: React.FC = () => {
     const [showConfirmModal, setShowConfirmModal] = useState<{isOpen: boolean, onConfirm: () => void, title: string, message: string, confirmText: string}>({isOpen: false, onConfirm: () => {}, title: '', message: '', confirmText: 'Confirm'});
     const [toast, setToast] = useState({ show: false, message: '' });
 
+    // Request notification permission on mount
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
+
     // Seed database on first load
     useEffect(() => {
         const allUsers = getAllUsers();
@@ -269,6 +276,56 @@ const App: React.FC = () => {
         }
         setIsLoading(false);
     }, [currentUser]);
+
+    // Global notification system - monitor all conversations for new messages
+    const previousConversationLengths = useCallback((convId: string) => {
+        const key = `ai-lign-prev-msg-count-${convId}`;
+        const stored = sessionStorage.getItem(key);
+        return stored ? parseInt(stored, 10) : 0;
+    }, []);
+
+    const setPreviousConversationLength = useCallback((convId: string, count: number) => {
+        const key = `ai-lign-prev-msg-count-${convId}`;
+        sessionStorage.setItem(key, count.toString());
+    }, []);
+
+    useEffect(() => {
+        if (!currentUser) return;
+
+        Object.keys(conversations).forEach(conversationId => {
+            const messages = conversations[conversationId];
+            const currentCount = messages.length;
+            const previousCount = previousConversationLengths(conversationId);
+
+            // Check if there's a new message
+            if (currentCount > previousCount && messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                
+                // Only notify for messages from matched users, not from the current user
+                if (lastMessage.sender === 'matched') {
+                    // Find the matched profile
+                    const [id1, id2] = conversationId.split('-').map(Number);
+                    const matchedId = id1 === currentUser.id ? id2 : id1;
+                    
+                    // Only show notification if not currently chatting with this person
+                    if (!chattingWith || chattingWith.id !== matchedId) {
+                        const allUsers = getAllUsers();
+                        const matchedProfile = allUsers.find(u => u.id === matchedId);
+                        
+                        if (matchedProfile) {
+                            showNotification(`${matchedProfile.name} sent you a message`, {
+                                body: lastMessage.text?.substring(0, 60) + (lastMessage.text && lastMessage.text.length > 60 ? '...' : '') || '📷 Sent a photo',
+                                icon: matchedProfile.imageUrl,
+                                tag: `message-${conversationId}`, // Prevents duplicate notifications
+                            });
+                        }
+                    }
+                }
+            }
+
+            setPreviousConversationLength(conversationId, currentCount);
+        });
+    }, [conversations, currentUser, chattingWith, previousConversationLengths, setPreviousConversationLength]);
     
     const showNotification = (title: string, options: NotificationOptions) => {
         if ('Notification' in window && Notification.permission === 'granted') {
@@ -345,8 +402,23 @@ const App: React.FC = () => {
                 ? { ...targetProfile, likes: [...targetProfile.likes, currentUser.id] }
                 : targetProfile;
             
-            const finalCurrentUser = { ...updatedCurrentUser, matches: [...updatedCurrentUser.matches, targetProfile.id] };
-            const finalTargetProfile = { ...updatedTargetProfile, matches: [...updatedTargetProfile.matches, currentUser.id] };
+            const matchTimestamp = new Date().toISOString();
+            const finalCurrentUser = { 
+                ...updatedCurrentUser, 
+                matches: [...updatedCurrentUser.matches, targetProfile.id],
+                matchTimestamps: {
+                    ...(updatedCurrentUser.matchTimestamps || {}),
+                    [targetProfile.id]: matchTimestamp
+                }
+            };
+            const finalTargetProfile = { 
+                ...updatedTargetProfile, 
+                matches: [...updatedTargetProfile.matches, currentUser.id],
+                matchTimestamps: {
+                    ...(updatedTargetProfile.matchTimestamps || {}),
+                    [currentUser.id]: matchTimestamp
+                }
+            };
             
             setCurrentUser(finalCurrentUser);
             setMatchedProfile(finalTargetProfile);
@@ -505,13 +577,22 @@ const App: React.FC = () => {
         case 'matches':
             const allUsers = getAllUsers();
             const matchProfiles = allUsers.filter(u => currentUser.matches.includes(u.id));
+            
+            // Sort matches by timestamp (newest first)
+            const sortedMatches = matchProfiles.sort((a, b) => {
+                const timestampA = currentUser.matchTimestamps?.[a.id] || '';
+                const timestampB = currentUser.matchTimestamps?.[b.id] || '';
+                return timestampB.localeCompare(timestampA); // Descending order (newest first)
+            });
 
             return <CompatibleModels 
-                matches={matchProfiles}
+                matches={sortedMatches}
                 onStartConversation={handleStartConversation}
                 onGoBack={() => setCurrentView('swiping')}
                 onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
                 onEditProfile={() => setCurrentView('editProfile')}
+                conversations={conversations}
+                currentUserId={currentUser.id}
             />
         case 'swiping':
         default:
