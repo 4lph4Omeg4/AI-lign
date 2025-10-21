@@ -40,7 +40,10 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    useEffect(scrollToBottom, [messages]);
+    useEffect(() => {
+        scrollToBottom();
+        console.log('Messages updated, count:', messages.length);
+    }, [messages]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -55,6 +58,8 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     }, [menuRef]);
 
     const handleSendMessage = async (text: string, imageUrl?: string, ephemeral?: boolean) => {
+        if (!text && !imageUrl) return; // Don't send empty messages
+        
         const message: Message = {
             id: getUniqueMessageId(),
             text: text || undefined,
@@ -66,7 +71,12 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
             viewed: false,
         };
 
-        onUpdateConversation(matchedProfile.id, prev => [...prev, message]);
+        // Update conversation immediately
+        onUpdateConversation(matchedProfile.id, prev => {
+            const updated = [...prev, message];
+            console.log('Sending message, conversation now has', updated.length, 'messages');
+            return updated;
+        });
 
         // Generate AI response (only if seed profile with ID < 10000)
         if (matchedProfile.id < 10000 && text && !ephemeral) {
@@ -77,8 +87,9 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
             
             setTimeout(async () => {
                 try {
-                    const currentMessages = [...messages, message];
-                    const aiResponse = await generateChatResponse(matchedProfile, currentMessages, text);
+                    // Generate AI response with the user's message included
+                    const conversationForAI = [...messages, message];
+                    const aiResponse = await generateChatResponse(matchedProfile, conversationForAI, text);
                     
                     const aiMessage: Message = {
                         id: getUniqueMessageId(),
@@ -88,7 +99,12 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                         read: false,
                     };
                     
-                    onUpdateConversation(matchedProfile.id, prev => [...prev, aiMessage]);
+                    // Add AI response to conversation
+                    onUpdateConversation(matchedProfile.id, prev => {
+                        console.log('AI responding, conversation now has', prev.length + 1, 'messages');
+                        return [...prev, aiMessage];
+                    });
+                    
                     setIsTyping(false);
                     
                     // Show notification
@@ -254,6 +270,10 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                                 <h2 className="font-bold text-lg leading-tight">{matchedProfile.name}</h2>
                                 <p className="text-xs text-green-400 font-mono">
                                     {isTyping ? 'typing...' : 'Online'}
+                                </p>
+                                {/* Debug: Show message count */}
+                                <p className="text-[10px] text-gray-600 font-mono">
+                                    {messages.length} message{messages.length !== 1 ? 's' : ''}
                                 </p>
                             </div>
                         </div>
