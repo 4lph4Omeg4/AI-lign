@@ -178,11 +178,25 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
                                Save Changes
                             </button>
                         </div>
-                        <div className="pt-4 text-center border-t border-white/10">
+                        <div className="pt-4 text-center border-t border-white/10 space-y-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (confirm('Reset all users? This will clear all profiles and reload seed profiles. Your current profile will be kept.')) {
+                                        window.localStorage.removeItem('ai-lign-all-users');
+                                        window.localStorage.removeItem('ai-lign-conversations');
+                                        alert('Database reset! Please refresh the page.');
+                                        window.location.reload();
+                                    }
+                                }}
+                                className="block w-full text-sm text-yellow-400/70 hover:text-yellow-400 hover:underline font-mono transition-colors"
+                            >
+                                🔄 Reset Database (Dev)
+                            </button>
                             <button
                                 type="button"
                                 onClick={onLogout}
-                                className="text-sm text-red-400/70 hover:text-red-400 hover:underline font-mono transition-colors"
+                                className="block w-full text-sm text-red-400/70 hover:text-red-400 hover:underline font-mono transition-colors"
                             >
                                 Log Out
                             </button>
