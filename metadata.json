@@ -1,0 +1,8 @@
+{
+  "name": "AI-lign",
+  "description": "An online dating platform for people that prefer communicating with artificial intelligence. Find like-minded individuals and connect on a new wavelength.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
