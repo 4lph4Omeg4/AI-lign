@@ -42,18 +42,23 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
 
     useEffect(() => {
         scrollToBottom();
-        console.log('Messages updated, count:', messages.length);
-        
-        // Mark all messages from the matched user as read when viewing the chat
-        const hasUnreadMessages = messages.some(msg => msg.sender === 'matched' && !msg.read);
-        if (hasUnreadMessages) {
-            onUpdateConversation(matchedProfile.id, prevMessages =>
-                prevMessages.map(msg => 
-                    msg.sender === 'matched' ? { ...msg, read: true } : msg
-                )
-            );
+    }, [messages]);
+
+    // Mark messages as read when first entering the chat or when new unread messages arrive
+    useEffect(() => {
+        const unreadMessages = messages.filter(msg => msg.sender === 'matched' && !msg.read);
+        if (unreadMessages.length > 0) {
+            // Use setTimeout to avoid update during render
+            const timer = setTimeout(() => {
+                onUpdateConversation(matchedProfile.id, prevMessages =>
+                    prevMessages.map(msg => 
+                        msg.sender === 'matched' && !msg.read ? { ...msg, read: true } : msg
+                    )
+                );
+            }, 100);
+            return () => clearTimeout(timer);
         }
-    }, [messages, matchedProfile.id, onUpdateConversation]);
+    }, [messages.length, matchedProfile.id]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
