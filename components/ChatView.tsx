@@ -157,11 +157,15 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
             ? "bg-gradient-to-br from-cyan-500 to-blue-600 self-end"
             : "bg-gradient-to-br from-fuchsia-600 to-purple-700 self-start";
         const alignmentClasses = isUser ? "items-end" : "items-start";
+        const senderName = isUser ? 'You' : matchedProfile.name;
 
         if (message.ephemeral) {
             if (message.viewed) return <div className="text-center text-xs text-gray-500 font-mono my-2 animate-fade-in self-center px-4 py-1 bg-gray-800/50 rounded-full">Photo viewed and deleted.</div>;
             return (
                  <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
+                    <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
+                        {senderName}
+                    </span>
                     <div
                         onMouseDown={() => setEphemeralInView(message.id)}
                         onMouseUp={() => handleEphemeralViewEnd(message.id)}
@@ -185,6 +189,9 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
 
         return (
              <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
+                <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
+                    {senderName}
+                </span>
                 <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''}`}>
                     {message.imageUrl && (
                         <img src={message.imageUrl} alt="Shared content" className="max-w-xs max-h-80 object-cover rounded-xl" />
