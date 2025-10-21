@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile, Message } from '../types';
+import { generateChatResponse } from '../services/geminiService';
 
 interface ChatViewProps {
     userProfile: UserProfile;
@@ -26,6 +27,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
     const [isEphemeral, setIsEphemeral] = useState(false);
     const [ephemeralInView, setEphemeralInView] = useState<number | null>(null);
+    const [isTyping, setIsTyping] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -65,6 +67,41 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
         };
 
         onUpdateConversation(matchedProfile.id, prev => [...prev, message]);
+
+        // Generate AI response (only if seed profile with ID < 10000)
+        if (matchedProfile.id < 10000 && text && !ephemeral) {
+            setIsTyping(true);
+            
+            // Realistic typing delay (1-3 seconds)
+            const typingDelay = 1000 + Math.random() * 2000;
+            
+            setTimeout(async () => {
+                try {
+                    const currentMessages = [...messages, message];
+                    const aiResponse = await generateChatResponse(matchedProfile, currentMessages, text);
+                    
+                    const aiMessage: Message = {
+                        id: getUniqueMessageId(),
+                        text: aiResponse,
+                        sender: 'matched',
+                        timestamp: new Date(),
+                        read: false,
+                    };
+                    
+                    onUpdateConversation(matchedProfile.id, prev => [...prev, aiMessage]);
+                    setIsTyping(false);
+                    
+                    // Show notification
+                    showNotification(`${matchedProfile.name} replied`, {
+                        body: aiResponse.substring(0, 50) + (aiResponse.length > 50 ? '...' : ''),
+                        icon: matchedProfile.imageUrl,
+                    });
+                } catch (error) {
+                    console.error('Error generating AI response:', error);
+                    setIsTyping(false);
+                }
+            }, typingDelay);
+        }
     };
 
     const handleTextInputSend = () => {
@@ -208,7 +245,9 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                             <img src={matchedProfile.imageUrl} alt={matchedProfile.name} className="w-10 h-10 rounded-full object-cover border-2 border-fuchsia-500" />
                             <div className="ml-3">
                                 <h2 className="font-bold text-lg leading-tight">{matchedProfile.name}</h2>
-                                <p className="text-xs text-green-400 font-mono">Online</p>
+                                <p className="text-xs text-green-400 font-mono">
+                                    {isTyping ? 'typing...' : 'Online'}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -230,7 +269,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                 </header>
                 {/* Chat Body */}
                 <main className="flex-grow p-4 md:p-8 flex flex-col overflow-y-auto no-scrollbar">
-                   {messages.length === 0 && (
+                   {messages.length === 0 && !isTyping && (
                         <div className="text-center text-sm text-gray-500 font-mono m-auto">
                             <p>You matched with {matchedProfile.name}.</p>
                             <p className="mt-1 text-cyan-400/80">Make the first move!</p>
@@ -238,6 +277,18 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                     )}
                     <div className="flex flex-col space-y-4">
                         {messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
+                        {isTyping && (
+                            <div className="flex flex-col w-full max-w-md mx-2 items-start animate-fade-in-up">
+                                <div className="px-4 py-3 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-700">
+                                    <div className="flex space-x-2">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                                        <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                                        <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                                    </div>
+                                </div>
+                                <span className="text-xs text-gray-500 mt-1 px-1">{matchedProfile.name} is typing...</span>
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
                 </main>

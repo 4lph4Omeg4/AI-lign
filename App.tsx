@@ -26,9 +26,25 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
         }
         try {
             const item = window.localStorage.getItem(key);
-            return item ? JSON.parse(item) : initialValue;
+            if (!item) return initialValue;
+            
+            const parsed = JSON.parse(item);
+            
+            // Special handling for conversations to restore Date objects
+            if (key === 'ai-lign-conversations' && typeof parsed === 'object') {
+                Object.keys(parsed).forEach(convId => {
+                    if (Array.isArray(parsed[convId])) {
+                        parsed[convId] = parsed[convId].map((msg: any) => ({
+                            ...msg,
+                            timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date()
+                        }));
+                    }
+                });
+            }
+            
+            return parsed;
         } catch (error) {
-            console.error(`Error reading localStorage key “${key}”:`, error);
+            console.error(`Error reading localStorage key "${key}":`, error);
             return initialValue;
         }
     });
@@ -41,7 +57,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
                 window.localStorage.setItem(key, JSON.stringify(valueToStore));
             }
         } catch (error) {
-            console.error(`Error setting localStorage key “${key}”:`, error);
+            console.error(`Error setting localStorage key "${key}":`, error);
         }
     };
 
@@ -225,13 +241,21 @@ const App: React.FC = () => {
 
         // Update current user's likes
         const updatedCurrentUser = { ...currentUser, likes: [...currentUser.likes, targetProfile.id] };
-        setCurrentUser(updatedCurrentUser);
-
-        // Check for a match
-        if (targetProfile.likes.includes(currentUser.id)) {
+        
+        // Check if the target profile already likes us back
+        const alreadyLikesBack = targetProfile.likes.includes(currentUser.id);
+        
+        // Auto-match: If target profile is a seed profile (ID < 10000), have them like us back
+        const shouldAutoMatch = targetProfile.id < 10000 && !alreadyLikesBack;
+        
+        if (alreadyLikesBack || shouldAutoMatch) {
             // IT'S A MATCH!
+            const updatedTargetProfile = shouldAutoMatch 
+                ? { ...targetProfile, likes: [...targetProfile.likes, currentUser.id] }
+                : targetProfile;
+            
             const finalCurrentUser = { ...updatedCurrentUser, matches: [...updatedCurrentUser.matches, targetProfile.id] };
-            const finalTargetProfile = { ...targetProfile, matches: [...targetProfile.matches, currentUser.id] };
+            const finalTargetProfile = { ...updatedTargetProfile, matches: [...updatedTargetProfile.matches, currentUser.id] };
             
             setCurrentUser(finalCurrentUser);
             setMatchedProfile(finalTargetProfile);
@@ -253,6 +277,7 @@ const App: React.FC = () => {
 
         } else {
             // No match yet, just record the like
+            setCurrentUser(updatedCurrentUser);
             const allUsers = getAllUsers();
             const updatedUsers = allUsers.map(u => u.id === updatedCurrentUser.id ? updatedCurrentUser : u);
             saveAllUsers(updatedUsers);
@@ -359,10 +384,12 @@ const App: React.FC = () => {
         case 'chat':
             if (chattingWith) {
                 const conversationId = [currentUser.id, chattingWith.id].sort().join('-');
+                const chatMessages = conversations[conversationId] || [];
+                
                 return <ChatView 
                     userProfile={currentUser}
                     matchedProfile={chattingWith}
-                    messages={conversations[conversationId] || []}
+                    messages={chatMessages}
                     onUpdateConversation={handleUpdateConversation}
                     onGoBack={() => { setCurrentView('matches'); setChattingWith(null); }}
                     onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
@@ -370,6 +397,8 @@ const App: React.FC = () => {
                     onInitiateVideoChat={() => setCurrentView('videoChat')}
                 />;
             }
+            // If no chattingWith profile, go back to matches
+            console.warn('Chat view opened with no profile selected');
             setCurrentView('matches');
             return null;
         case 'videoChat':
