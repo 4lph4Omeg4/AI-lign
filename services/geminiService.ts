@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { UserProfile, Message } from '../types';
 
 // Initialize the Gemini API
@@ -19,7 +19,7 @@ export const generateChatResponse = async (
             throw new Error('Gemini API key not configured');
         }
         
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
         // Build conversation context
         const recentMessages = conversationHistory.slice(-6); // Last 6 messages for context
@@ -71,7 +71,7 @@ export const generateOpeningMessage = async (profile: UserProfile, matchedUserPr
             throw new Error('Gemini API key not configured');
         }
         
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
         const prompt = `You are ${profile.name}, a ${profile.age}-year-old person on a dating app.
 
