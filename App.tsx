@@ -61,7 +61,16 @@ const getAllUsers = (): UserProfile[] => {
 };
 
 const saveAllUsers = (users: UserProfile[]) => {
-    window.localStorage.setItem('ai-lign-all-users', JSON.stringify(users));
+    try {
+        window.localStorage.setItem('ai-lign-all-users', JSON.stringify(users));
+    } catch (error) {
+        if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+            console.error('Storage quota exceeded. Please clear some data or use smaller images.');
+            alert('Storage limit reached. Please try uploading a smaller image or clear your browser data.');
+            throw error;
+        }
+        throw error;
+    }
 };
 
 const App: React.FC = () => {
@@ -182,11 +191,16 @@ const App: React.FC = () => {
             dislikes: [],
             matches: [],
         };
-        saveAllUsers([...allUsers, newUser]);
-        setCurrentUser(newUser);
-        setCurrentView('swiping'); // Explicitly set the view here to avoid race conditions
-        setToast({ show: true, message: 'Welcome! Your profile is live.' });
-        return true;
+        try {
+            saveAllUsers([...allUsers, newUser]);
+            setCurrentUser(newUser);
+            setCurrentView('swiping'); // Explicitly set the view here to avoid race conditions
+            setToast({ show: true, message: 'Welcome! Your profile is live.' });
+            return true;
+        } catch (error) {
+            // If storage fails, return false to show error in UI
+            return false;
+        }
     };
     
     const handleProfileUpdate = (updatedProfile: UserProfile) => {
