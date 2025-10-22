@@ -256,6 +256,20 @@ const App: React.FC = () => {
         }
     }, []);
 
+    // Sync current user to global database whenever it changes
+    useEffect(() => {
+        if (currentUser) {
+            const allUsers = getAllUsers();
+            const userIndex = allUsers.findIndex(u => u.id === currentUser.id);
+            if (userIndex >= 0) {
+                // Update existing user in global database
+                const updatedUsers = [...allUsers];
+                updatedUsers[userIndex] = currentUser;
+                saveAllUsers(updatedUsers);
+            }
+        }
+    }, [currentUser]);
+
     // Load swipe queue on login or when current user changes
     useEffect(() => {
         setIsLoading(true);

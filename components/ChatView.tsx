@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { UserProfile, Message } from '../types';
 import { generateChatResponse } from '../services/geminiService';
 
@@ -13,12 +13,90 @@ interface ChatViewProps {
     onInitiateVideoChat: () => void;
 }
 
-const ReadReceiptIcon: React.FC<{ isRead: boolean }> = ({ isRead }) => (
+const ReadReceiptIcon: React.FC<{ isRead: boolean }> = memo(({ isRead }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 ml-1 inline-block transition-colors duration-500 ${isRead ? 'text-cyan-400' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 5.25l-9 13.5" transform="translate(-5)" opacity="0.7" />
     </svg>
-);
+));
+
+ReadReceiptIcon.displayName = 'ReadReceiptIcon';
+
+// Message bubble component - extracted and memoized to prevent flickering
+interface MessageBubbleProps {
+    message: Message;
+    matchedProfileName: string;
+    isCurrentlyViewing: boolean;
+    onStartViewing: (id: number) => void;
+    onEndViewing: (id: number) => void;
+}
+
+const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProfileName, isCurrentlyViewing, onStartViewing, onEndViewing }) => {
+    const isUser = message.sender === 'user';
+    const formattedTime = message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const bubbleClasses = isUser
+        ? "bg-gradient-to-br from-cyan-500 to-blue-600 self-end"
+        : "bg-gradient-to-br from-fuchsia-600 to-purple-700 self-start";
+    const alignmentClasses = isUser ? "items-end" : "items-start";
+    const senderName = isUser ? 'You' : matchedProfileName;
+
+    if (message.ephemeral) {
+        if (message.viewed) {
+            return (
+                <div className="text-center text-xs text-gray-500 font-mono my-2 animate-fade-in self-center px-4 py-1 bg-gray-800/50 rounded-full">
+                    Photo viewed and deleted.
+                </div>
+            );
+        }
+        return (
+            <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
+                <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
+                    {senderName}
+                </span>
+                <div
+                    onMouseDown={() => onStartViewing(message.id)}
+                    onMouseUp={() => onEndViewing(message.id)}
+                    onMouseLeave={() => { if (isCurrentlyViewing) onEndViewing(message.id); }}
+                    onTouchStart={() => onStartViewing(message.id)}
+                    onTouchEnd={() => onEndViewing(message.id)}
+                    onTouchCancel={() => { if (isCurrentlyViewing) onEndViewing(message.id); }}
+                    className={`px-4 py-3 rounded-2xl ${bubbleClasses} cursor-pointer`}
+                >
+                    <div className="flex items-center gap-2 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5l-6 6m0 0l-6-6m6 6l6-6m-6 6V4.5m6 6v-6" transform="rotate(45 12 12)" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9a3.34 3.34 0 00-4.58 2.52 3.34 3.34 0 007.16 0A3.34 3.34 0 0012 9z" opacity={0.4}/>
+                        </svg>
+                        <span className="font-bold">Hold to View Photo</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
+            <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
+                {senderName}
+            </span>
+            <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''}`}>
+                {message.imageUrl && (
+                    <img src={message.imageUrl} alt="Shared content" className="max-w-xs max-h-80 object-cover rounded-xl" />
+                )}
+                {message.text && (
+                    <p className="text-white text-base leading-relaxed">{message.text}</p>
+                )}
+            </div>
+            <div className={`flex items-center mt-1 px-1 ${isUser ? 'justify-end' : ''}`}>
+                <span className="text-xs text-gray-500">{formattedTime}</span>
+                {isUser && message.read !== undefined && <ReadReceiptIcon isRead={message.read} />}
+            </div>
+        </div>
+    );
+});
+
+MessageBubble.displayName = 'MessageBubble';
 
 const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messages, onUpdateConversation, onGoBack, onBlock, showNotification, onInitiateVideoChat }) => {
     const [newMessage, setNewMessage] = useState('');
@@ -32,9 +110,9 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const messageIdCounter = useRef(Date.now());
 
-    const getUniqueMessageId = () => messageIdCounter.current++;
+    // Generate unique message IDs that won't conflict even across sessions
+    const getUniqueMessageId = () => Date.now() + Math.random();
     
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,7 +120,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages.length]); // Only re-run when message count changes
 
     // Mark messages as read when first entering the chat or when new unread messages arrive
     useEffect(() => {
@@ -87,11 +165,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
         };
 
         // Update conversation immediately
-        onUpdateConversation(matchedProfile.id, prev => {
-            const updated = [...prev, message];
-            console.log('Sending message, conversation now has', updated.length, 'messages');
-            return updated;
-        });
+        onUpdateConversation(matchedProfile.id, prev => [...prev, message]);
 
         // Generate AI response (only if seed profile with ID < 10000)
         if (matchedProfile.id < 10000 && text && !ephemeral) {
@@ -115,10 +189,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                     };
                     
                     // Add AI response to conversation
-                    onUpdateConversation(matchedProfile.id, prev => {
-                        console.log('AI responding, conversation now has', prev.length + 1, 'messages');
-                        return [...prev, aiMessage];
-                    });
+                    onUpdateConversation(matchedProfile.id, prev => [...prev, aiMessage]);
                     
                     setIsTyping(false);
                     
@@ -179,66 +250,6 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
         }
     };
 
-    const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
-        // Since this is a simulation, we'll render the current user's messages on the right.
-        const isUser = message.sender === 'user';
-        const formattedTime = message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const bubbleClasses = isUser
-            ? "bg-gradient-to-br from-cyan-500 to-blue-600 self-end"
-            : "bg-gradient-to-br from-fuchsia-600 to-purple-700 self-start";
-        const alignmentClasses = isUser ? "items-end" : "items-start";
-        const senderName = isUser ? 'You' : matchedProfile.name;
-
-        if (message.ephemeral) {
-            if (message.viewed) return <div className="text-center text-xs text-gray-500 font-mono my-2 animate-fade-in self-center px-4 py-1 bg-gray-800/50 rounded-full">Photo viewed and deleted.</div>;
-            return (
-                 <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
-                    <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
-                        {senderName}
-                    </span>
-                    <div
-                        onMouseDown={() => setEphemeralInView(message.id)}
-                        onMouseUp={() => handleEphemeralViewEnd(message.id)}
-                        onMouseLeave={() => { if (ephemeralInView === message.id) handleEphemeralViewEnd(message.id); }}
-                        onTouchStart={() => setEphemeralInView(message.id)}
-                        onTouchEnd={() => handleEphemeralViewEnd(message.id)}
-                        onTouchCancel={() => { if (ephemeralInView === message.id) handleEphemeralViewEnd(message.id); }}
-                        className={`px-4 py-3 rounded-2xl ${bubbleClasses} cursor-pointer`}
-                    >
-                        <div className="flex items-center gap-2 text-white">
-                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5l-6 6m0 0l-6-6m6 6l6-6m-6 6V4.5m6 6v-6" transform="rotate(45 12 12)" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9a3.34 3.34 0 00-4.58 2.52 3.34 3.34 0 007.16 0A3.34 3.34 0 0012 9z" opacity={0.4}/>
-                            </svg>
-                            <span className="font-bold">Hold to View Photo</span>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-             <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
-                <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
-                    {senderName}
-                </span>
-                <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''}`}>
-                    {message.imageUrl && (
-                        <img src={message.imageUrl} alt="Shared content" className="max-w-xs max-h-80 object-cover rounded-xl" />
-                    )}
-                    {message.text && (
-                        <p className="text-white text-base leading-relaxed">{message.text}</p>
-                    )}
-                </div>
-                 <div className={`flex items-center mt-1 px-1 ${isUser ? 'justify-end' : ''}`}>
-                    <span className="text-xs text-gray-500">{formattedTime}</span>
-                    {isUser && message.read !== undefined && <ReadReceiptIcon isRead={message.read} />}
-                </div>
-            </div>
-        )
-    }
-
     return (
         <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col">
             {ephemeralInView && (
@@ -286,10 +297,6 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                                 <p className="text-xs text-green-400 font-mono">
                                     {isTyping ? 'typing...' : 'Online'}
                                 </p>
-                                {/* Debug: Show message count */}
-                                <p className="text-[10px] text-gray-600 font-mono">
-                                    {messages.length} message{messages.length !== 1 ? 's' : ''}
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -318,7 +325,16 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                         </div>
                     )}
                     <div className="flex flex-col space-y-4">
-                        {messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
+                        {messages.map(msg => (
+                            <MessageBubble 
+                                key={msg.id} 
+                                message={msg} 
+                                matchedProfileName={matchedProfile.name}
+                                isCurrentlyViewing={ephemeralInView === msg.id}
+                                onStartViewing={setEphemeralInView}
+                                onEndViewing={handleEphemeralViewEnd}
+                            />
+                        ))}
                         {isTyping && (
                             <div className="flex flex-col w-full max-w-md mx-2 items-start animate-fade-in-up">
                                 <div className="px-4 py-3 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-700">
