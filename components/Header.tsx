@@ -3,9 +3,11 @@ import React from 'react';
 interface HeaderProps {
     onShowModelsClick?: () => void;
     showModelsButton?: boolean;
+    onDarkRoomClick?: () => void;
+    showDarkRoomButton?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onShowModelsClick, showModelsButton = false }) => {
+const Header: React.FC<HeaderProps> = ({ onShowModelsClick, showModelsButton = false, onDarkRoomClick, showDarkRoomButton = false }) => {
   return (
     <header className="py-6 text-center relative">
       <h1 className="text-5xl md:text-6xl font-bold tracking-tighter bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-transparent bg-clip-text">
@@ -14,6 +16,24 @@ const Header: React.FC<HeaderProps> = ({ onShowModelsClick, showModelsButton = f
       <p className="text-sm text-cyan-300/80 mt-2 font-mono tracking-widest">
         Find Your Frequency
       </p>
+      
+      {/* Left side - Dark Room button */}
+      {showDarkRoomButton && (
+        <button 
+            onClick={onDarkRoomClick} 
+            className="absolute top-1/2 left-0 md:left-4 -translate-y-1/2 p-2 rounded-full bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 transition-all shadow-lg hover:shadow-purple-500/50 animate-pulse hover:animate-none" 
+            title="Join Dark Room 🌙"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold animate-bounce">
+                {3 + Math.floor(Math.random() * 7)}
+            </span>
+        </button>
+      )}
+
+      {/* Right side - Matches button */}
       {showModelsButton && (
         <button 
             onClick={onShowModelsClick} 

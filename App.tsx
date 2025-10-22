@@ -16,6 +16,7 @@ import ConfirmationModal from './components/ConfirmationModal';
 import Toast from './components/Toast';
 import VideoChatView from './components/VideoChatView';
 import AuthView from './components/AuthView';
+import AnonymousGroupChat from './components/AnonymousGroupChat';
 
 
 // A custom hook to persist state in localStorage
@@ -64,7 +65,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
     return [storedValue, setValue];
 }
 
-type View = 'auth' | 'profileSetup' | 'swiping' | 'chat' | 'matches' | 'editProfile' | 'videoChat';
+type View = 'auth' | 'profileSetup' | 'swiping' | 'chat' | 'matches' | 'editProfile' | 'videoChat' | 'groupChat';
 
 // This simulates a global database of all users
 const getAllUsers = (): UserProfile[] => {
@@ -588,6 +589,10 @@ const App: React.FC = () => {
             }
             setCurrentView('chat');
             return null;
+        case 'groupChat':
+            return <AnonymousGroupChat 
+                onLeave={() => setCurrentView('swiping')}
+            />;
         case 'matches':
             const allUsers = getAllUsers();
             const matchProfiles = allUsers.filter(u => currentUser.matches.includes(u.id));
@@ -616,7 +621,12 @@ const App: React.FC = () => {
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAzMiBMMzIgMCBNMzIgMzIgTDAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU5LDAuMDUpIj48L3BhdGg+PC9zdmc+')] opacity-50"></div>
                     
                     <div className="relative z-10 flex flex-col h-screen p-4 md:p-8">
-                        <Header onShowModelsClick={() => setCurrentView('matches')} showModelsButton />
+                        <Header 
+                            onShowModelsClick={() => setCurrentView('matches')} 
+                            showModelsButton 
+                            onDarkRoomClick={() => setCurrentView('groupChat')}
+                            showDarkRoomButton
+                        />
                         <main className="flex-grow flex flex-col items-center justify-center relative">
                             <div className="w-full max-w-sm h-[70vh] max-h-[600px] relative">
                                 {currentProfileForSwiping ? (

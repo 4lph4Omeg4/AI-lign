@@ -36,10 +36,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
     const formattedTime = message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     const bubbleClasses = isUser
-        ? "bg-gradient-to-br from-cyan-500 to-blue-600 self-end"
-        : "bg-gradient-to-br from-fuchsia-600 to-purple-700 self-start";
-    const alignmentClasses = isUser ? "items-end" : "items-start";
+        ? "bg-gradient-to-br from-blue-500 to-blue-700 self-end ml-auto"
+        : "bg-gradient-to-br from-purple-600 to-fuchsia-600 self-start mr-auto";
+    const alignmentClasses = isUser ? "items-end ml-auto" : "items-start mr-auto";
     const senderName = isUser ? 'You' : matchedProfileName;
+    const senderColor = isUser ? "text-blue-300" : "text-fuchsia-300";
 
     if (message.ephemeral) {
         if (message.viewed) {
@@ -50,10 +51,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
             );
         }
         return (
-            <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
-                <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
-                    {senderName}
-                </span>
+            <div className={`flex flex-col w-full max-w-[80%] mx-2 ${alignmentClasses} animate-fade-in-up`}>
+                <div className={`px-2 py-0.5 rounded-t-lg ${isUser ? 'bg-blue-500/30' : 'bg-purple-500/30'} backdrop-blur-sm mb-1`}>
+                    <span className={`text-xs font-bold ${senderColor}`}>
+                        {senderName}
+                    </span>
+                </div>
                 <div
                     onMouseDown={() => onStartViewing(message.id)}
                     onMouseUp={() => onEndViewing(message.id)}
@@ -76,20 +79,27 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
     }
 
     return (
-        <div className={`flex flex-col w-full max-w-md mx-2 ${alignmentClasses} animate-fade-in-up`}>
-            <span className={`text-xs font-semibold mb-1 px-1 ${isUser ? 'text-cyan-300' : 'text-fuchsia-300'}`}>
-                {senderName}
-            </span>
-            <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''}`}>
+        <div className={`flex flex-col w-full max-w-[80%] mx-2 ${alignmentClasses} animate-fade-in-up`}>
+            {/* Sender Name Badge */}
+            <div className={`px-2 py-0.5 rounded-t-lg ${isUser ? 'bg-blue-500/30' : 'bg-purple-500/30'} backdrop-blur-sm mb-1 inline-block self-start`}>
+                <span className={`text-xs font-bold ${senderColor}`}>
+                    {senderName}
+                </span>
+            </div>
+            
+            {/* Message Content */}
+            <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''} shadow-lg`}>
                 {message.imageUrl && (
-                    <img src={message.imageUrl} alt="Shared content" className="max-w-xs max-h-80 object-cover rounded-xl" />
+                    <img src={message.imageUrl} alt="Shared content" className="max-w-xs max-h-80 object-cover rounded-xl mb-2" />
                 )}
                 {message.text && (
-                    <p className="text-white text-base leading-relaxed">{message.text}</p>
+                    <p className="text-white text-base leading-relaxed break-words">{message.text}</p>
                 )}
             </div>
-            <div className={`flex items-center mt-1 px-1 ${isUser ? 'justify-end' : ''}`}>
-                <span className="text-xs text-gray-500">{formattedTime}</span>
+            
+            {/* Timestamp and Read Receipt */}
+            <div className={`flex items-center mt-1 px-2 gap-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                <span className="text-xs text-gray-500 font-medium">{formattedTime}</span>
                 {isUser && message.read !== undefined && <ReadReceiptIcon isRead={message.read} />}
             </div>
         </div>
