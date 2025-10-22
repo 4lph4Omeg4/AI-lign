@@ -7,6 +7,7 @@ interface Participant {
     color: string;
     isMuted: boolean;
     isVideoOff: boolean;
+    videoUrl?: string;
 }
 
 interface AnonymousGroupChatProps {
@@ -32,10 +33,23 @@ const AVATAR_COLORS = [
     'from-teal-500 to-green-600',
 ];
 
+// Simulated video feeds for other participants
+const SIMULATED_VIDEOS = [
+    'https://assets.mixkit.co/videos/preview/mixkit-woman-looking-at-her-cell-phone-while-sitting-in-a-4540-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-young-man-looking-at-his-cell-phone-4823-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-woman-working-on-her-laptop-in-a-cafe-4620-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-man-smiling-at-camera-1291-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-woman-in-an-office-working-on-a-laptop-4635-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-young-woman-using-a-smartphone-4826-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-man-working-from-home-on-his-laptop-4248-large.mp4',
+    'https://assets.mixkit.co/videos/preview/mixkit-woman-smiling-while-using-her-smartphone-4827-large.mp4',
+];
+
 const generateParticipant = (id: string): Participant => {
     const name = ANONYMOUS_NAMES[Math.floor(Math.random() * ANONYMOUS_NAMES.length)];
     const color = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
     const emoji = ['🦊', '🐺', '🦅', '🐉', '🦁', '🐯', '🦉', '🐆'][Math.floor(Math.random() * 8)];
+    const videoUrl = SIMULATED_VIDEOS[Math.floor(Math.random() * SIMULATED_VIDEOS.length)];
     
     return {
         id,
@@ -44,6 +58,7 @@ const generateParticipant = (id: string): Participant => {
         color,
         isMuted: Math.random() > 0.7,
         isVideoOff: Math.random() > 0.8,
+        videoUrl,
     };
 };
 
@@ -55,6 +70,7 @@ const AnonymousGroupChat: React.FC<AnonymousGroupChatProps> = ({ onLeave }) => {
     const [groupMessage, setGroupMessage] = useState('');
     const [showControls, setShowControls] = useState(true);
     const [connectionTime, setConnectionTime] = useState(0);
+    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const hideControlsTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -145,6 +161,7 @@ const AnonymousGroupChat: React.FC<AnonymousGroupChatProps> = ({ onLeave }) => {
         const startStream = async () => {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                setLocalStream(stream);
                 if (localVideoRef.current) {
                     localVideoRef.current.srcObject = stream;
                 }
@@ -161,17 +178,35 @@ const AnonymousGroupChat: React.FC<AnonymousGroupChatProps> = ({ onLeave }) => {
     }, []);
 
     const handleToggleMute = () => {
-        setIsMuted(!isMuted);
-        setParticipants(prev => 
-            prev.map(p => p.id === myId ? { ...p, isMuted: !isMuted } : p)
-        );
+        if (localStream) {
+            const newMuteState = !isMuted;
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = !newMuteState;
+            });
+            setIsMuted(newMuteState);
+            setParticipants(prev => 
+                prev.map(p => p.id === myId ? { ...p, isMuted: newMuteState } : p)
+            );
+        }
     };
 
     const handleToggleVideo = () => {
-        setIsVideoOff(!isVideoOff);
-        setParticipants(prev => 
-            prev.map(p => p.id === myId ? { ...p, isVideoOff: !isVideoOff } : p)
-        );
+        if (localStream) {
+            const newVideoState = !isVideoOff;
+            localStream.getVideoTracks().forEach(track => {
+                track.enabled = !newVideoState;
+            });
+            setIsVideoOff(newVideoState);
+            setParticipants(prev => 
+                prev.map(p => p.id === myId ? { ...p, isVideoOff: newVideoState } : p)
+            );
+            
+            // Force video element to update when turning back on
+            if (localVideoRef.current && !newVideoState) {
+                localVideoRef.current.srcObject = localStream;
+                localVideoRef.current.play().catch(err => console.log('Play error:', err));
+            }
+        }
     };
 
     const myParticipant = participants.find(p => p.id === myId);
@@ -251,15 +286,14 @@ const AnonymousGroupChat: React.FC<AnonymousGroupChatProps> = ({ onLeave }) => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900">
-                                    <video
-                                        src="https://assets.mixkit.co/videos/preview/mixkit-spinning-around-the-earth-29351-large.mp4"
-                                        autoPlay
-                                        loop
-                                        muted
-                                        className="w-full h-full object-cover opacity-60"
-                                    />
-                                </div>
+                                <video
+                                    src={participant.videoUrl}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
                             )}
 
                             {/* Participant info overlay */}

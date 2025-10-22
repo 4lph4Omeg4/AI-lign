@@ -136,10 +136,17 @@ const VideoChatView: React.FC<VideoChatViewProps> = ({ matchedProfile, onEndCall
 
     const handleToggleVideo = () => {
         if (localStream) {
+            const newVideoState = !isVideoOff;
             localStream.getVideoTracks().forEach(track => {
-                track.enabled = !track.enabled;
+                track.enabled = !newVideoState;
             });
-            setIsVideoOff(!isVideoOff);
+            setIsVideoOff(newVideoState);
+            
+            // Force video element to update
+            if (localVideoRef.current && !newVideoState) {
+                localVideoRef.current.srcObject = localStream;
+                localVideoRef.current.play().catch(err => console.log('Play error:', err));
+            }
         }
     };
 
