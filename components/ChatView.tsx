@@ -35,12 +35,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
     const isUser = message.sender === 'user';
     const formattedTime = message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const bubbleClasses = isUser
-        ? "bg-gradient-to-br from-blue-500 to-blue-700 self-end ml-auto"
-        : "bg-gradient-to-br from-purple-600 to-fuchsia-600 self-start mr-auto";
-    const alignmentClasses = isUser ? "items-end ml-auto" : "items-start mr-auto";
+    // Determine sender display name
     const senderName = isUser ? 'You' : matchedProfileName;
-    const senderColor = isUser ? "text-blue-300" : "text-fuchsia-300";
+    
+    // Much more distinct styling for each sender
+    const bubbleClasses = isUser
+        ? "bg-gradient-to-br from-blue-600 to-blue-800 self-end ml-auto mr-2"
+        : "bg-gradient-to-br from-pink-600 to-purple-700 self-start ml-2 mr-auto";
+    const alignmentClasses = isUser ? "items-end ml-auto" : "items-start mr-auto";
+    const senderColor = isUser ? "text-blue-200" : "text-pink-200";
+    const badgeClasses = isUser ? "bg-blue-600/50" : "bg-pink-600/50";
 
     if (message.ephemeral) {
         if (message.viewed) {
@@ -51,9 +55,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
             );
         }
         return (
-            <div className={`flex flex-col w-full max-w-[80%] mx-2 ${alignmentClasses} animate-fade-in-up`}>
-                <div className={`px-2 py-0.5 rounded-t-lg ${isUser ? 'bg-blue-500/30' : 'bg-purple-500/30'} backdrop-blur-sm mb-1`}>
-                    <span className={`text-xs font-bold ${senderColor}`}>
+            <div className={`flex flex-col w-full max-w-[75%] mx-2 ${alignmentClasses} animate-fade-in-up`}>
+                <div className={`px-3 py-1 rounded-lg ${badgeClasses} backdrop-blur-sm mb-1 inline-block self-start shadow-md`}>
+                    <span className={`text-sm font-extrabold ${senderColor} uppercase tracking-wide`}>
                         {senderName}
                     </span>
                 </div>
@@ -64,7 +68,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
                     onTouchStart={() => onStartViewing(message.id)}
                     onTouchEnd={() => onEndViewing(message.id)}
                     onTouchCancel={() => { if (isCurrentlyViewing) onEndViewing(message.id); }}
-                    className={`px-4 py-3 rounded-2xl ${bubbleClasses} cursor-pointer`}
+                    className={`px-4 py-3 rounded-2xl ${bubbleClasses} cursor-pointer shadow-lg`}
                 >
                     <div className="flex items-center gap-2 text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -79,16 +83,16 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
     }
 
     return (
-        <div className={`flex flex-col w-full max-w-[80%] mx-2 ${alignmentClasses} animate-fade-in-up`}>
-            {/* Sender Name Badge */}
-            <div className={`px-2 py-0.5 rounded-t-lg ${isUser ? 'bg-blue-500/30' : 'bg-purple-500/30'} backdrop-blur-sm mb-1 inline-block self-start`}>
-                <span className={`text-xs font-bold ${senderColor}`}>
+        <div className={`flex flex-col w-full max-w-[75%] mx-2 ${alignmentClasses} animate-fade-in-up`}>
+            {/* Sender Name Badge - VERY PROMINENT */}
+            <div className={`px-3 py-1 rounded-lg ${badgeClasses} backdrop-blur-sm mb-1 inline-block self-start shadow-md border ${isUser ? 'border-blue-400/50' : 'border-pink-400/50'}`}>
+                <span className={`text-sm font-extrabold ${senderColor} uppercase tracking-wide`}>
                     {senderName}
                 </span>
             </div>
             
             {/* Message Content */}
-            <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''} shadow-lg`}>
+            <div className={`px-4 py-3 rounded-2xl ${bubbleClasses} ${message.imageUrl ? 'p-2' : ''} shadow-lg border ${isUser ? 'border-blue-500/30' : 'border-pink-500/30'}`}>
                 {message.imageUrl && (
                     <img src={message.imageUrl} alt="Shared content" className="max-w-xs max-h-80 object-cover rounded-xl mb-2" />
                 )}
@@ -99,7 +103,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
             
             {/* Timestamp and Read Receipt */}
             <div className={`flex items-center mt-1 px-2 gap-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
-                <span className="text-xs text-gray-500 font-medium">{formattedTime}</span>
+                <span className={`text-xs ${isUser ? 'text-blue-400' : 'text-pink-400'} font-medium`}>{formattedTime}</span>
                 {isUser && message.read !== undefined && <ReadReceiptIcon isRead={message.read} />}
             </div>
         </div>
