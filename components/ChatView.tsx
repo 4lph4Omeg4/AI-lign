@@ -281,14 +281,18 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                     <div className="bg-gray-900 rounded-2xl p-6 text-center max-w-sm w-11/12" onClick={e => e.stopPropagation()}>
                         <h2 className="text-xl font-bold text-cyan-300">Send Photo</h2>
                         <img src={imagePreviewUrl} alt="Preview" className="my-4 rounded-lg max-h-64 mx-auto" />
-                        <label className="flex items-center justify-center gap-3 font-mono text-lg cursor-pointer group" htmlFor="ephemeral-toggle">
+                        <button 
+                            type="button"
+                            onClick={() => setIsEphemeral(!isEphemeral)}
+                            className="flex items-center justify-center gap-3 font-mono text-lg cursor-pointer group hover:opacity-80 transition-opacity"
+                        >
                              <div className={`relative w-12 h-7 rounded-full transition-colors ${isEphemeral ? 'bg-fuchsia-600' : 'bg-gray-700'}`}>
                                 <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${isEphemeral ? 'translate-x-5' : ''}`}></div>
                             </div>
                             <span className={`transition-colors ${isEphemeral ? 'text-fuchsia-400' : 'text-gray-400'}`}>
                                 View Once
                             </span>
-                        </label>
+                        </button>
                         <p className="text-xs text-gray-500 mt-2">{isEphemeral ? "The photo will be deleted after being viewed." : "The photo will be saved in the chat."}</p>
                         <div className="mt-6 flex gap-4">
                             <button onClick={closeImageConfirmModal} className="w-full bg-gray-700/50 hover:bg-gray-700 font-bold py-3 px-4 rounded-lg transition-colors">Cancel</button>
