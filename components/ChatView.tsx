@@ -26,13 +26,15 @@ ReadReceiptIcon.displayName = 'ReadReceiptIcon';
 interface MessageBubbleProps {
     message: Message;
     matchedProfileName: string;
+    currentUserId: number;
     isCurrentlyViewing: boolean;
     onStartViewing: (id: number) => void;
     onEndViewing: (id: number) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProfileName, isCurrentlyViewing, onStartViewing, onEndViewing }) => {
-    const isUser = message.sender === 'user';
+const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProfileName, currentUserId, isCurrentlyViewing, onStartViewing, onEndViewing }) => {
+    // Determine if this message was sent by the currently logged-in user
+    const isUser = message.senderId === currentUserId;
     const formattedTime = message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     // Determine sender display name
@@ -172,6 +174,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
             text: text || undefined,
             imageUrl,
             sender: 'user', // In this simulation, the current user is always the sender
+            senderId: userProfile.id, // Store the actual user ID who sent this
             timestamp: new Date(),
             read: true, // For simplicity, messages are marked as read immediately
             ephemeral,
@@ -198,6 +201,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                         id: getUniqueMessageId(),
                         text: aiResponse,
                         sender: 'matched',
+                        senderId: matchedProfile.id, // Store the matched user's ID
                         timestamp: new Date(),
                         read: false,
                     };
@@ -344,6 +348,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                                 key={msg.id} 
                                 message={msg} 
                                 matchedProfileName={matchedProfile.name}
+                                currentUserId={userProfile.id}
                                 isCurrentlyViewing={ephemeralInView === msg.id}
                                 onStartViewing={setEphemeralInView}
                                 onEndViewing={handleEphemeralViewEnd}

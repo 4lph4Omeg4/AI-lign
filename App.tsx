@@ -518,6 +518,7 @@ const App: React.FC = () => {
                 id: Date.now(),
                 text: openingLine,
                 sender: 'user', // In this context, 'user' is the currentUser
+                senderId: currentUser.id, // Store who actually sent this message
                 timestamp: new Date(),
                 read: true,
             };

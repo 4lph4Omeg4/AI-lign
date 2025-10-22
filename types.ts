@@ -18,6 +18,7 @@ export interface Message {
   text?: string;
   imageUrl?: string;
   sender: 'user' | 'matched' | 'system';
+  senderId?: number; // The actual user ID who sent the message
   timestamp: Date;
   read?: boolean;
   ephemeral?: boolean;
