@@ -137,22 +137,28 @@ const App: React.FC = () => {
         }
     }, []);
 
-    // Migration: Add 'lookingFor' field to existing users
+    // Migration: Add 'lookingFor' and 'gender' fields to existing users
     useEffect(() => {
         const allUsers = getAllUsers();
-        // Check if any user doesn't have lookingFor
-        const needsMigration = allUsers.some(u => !u.lookingFor);
+        // Check if any user doesn't have lookingFor or gender
+        const needsMigration = allUsers.some(u => !u.lookingFor || !u.gender);
         if (needsMigration) {
-            console.log('Migrating users to add lookingFor field...');
+            console.log('Migrating users to add lookingFor and gender fields...');
             const updatedUsers = allUsers.map(u => {
+                const updates: any = {};
                 if (!u.lookingFor) {
                     // Assign a random lookingFor based on id to keep it consistent
                     const options: ('fun' | 'webcam' | 'connection' | 'hookup')[] = ['fun', 'webcam', 'connection', 'hookup'];
-                    const lookingForValue = options[u.id % 4];
-                    console.log(`Assigning ${lookingForValue} to user ${u.name} (ID: ${u.id})`);
-                    return { ...u, lookingFor: lookingForValue };
+                    updates.lookingFor = options[u.id % 4];
+                    console.log(`Assigning ${updates.lookingFor} to user ${u.name} (ID: ${u.id})`);
                 }
-                return u;
+                if (!u.gender) {
+                    // Assign a random gender based on id to keep it consistent
+                    const genderOptions: ('male' | 'female' | 'non-binary' | 'prefer-not-to-say')[] = ['male', 'female', 'non-binary', 'prefer-not-to-say'];
+                    updates.gender = genderOptions[u.id % 4];
+                    console.log(`Assigning ${updates.gender} to user ${u.name} (ID: ${u.id})`);
+                }
+                return { ...u, ...updates };
             });
             saveAllUsers(updatedUsers);
         }
@@ -176,6 +182,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                     privatePhotos: [
                         'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=400&auto=format&fit=crop',
                         'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=400&auto=format&fit=crop'
@@ -194,6 +201,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1003,
@@ -208,6 +216,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'webcam',
+                    gender: 'female',
                 },
                 {
                     id: 1004,
@@ -222,6 +231,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'hookup',
+                    gender: 'female',
                     privatePhotos: [
                         'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=400&auto=format&fit=crop',
                         'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=400&auto=format&fit=crop',
@@ -241,6 +251,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1006,
@@ -255,6 +266,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'hookup',
+                    gender: 'female',
                 },
                 {
                     id: 1007,
@@ -269,6 +281,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1008,
@@ -283,6 +296,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1009,
@@ -297,6 +311,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1010,
@@ -311,6 +326,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'webcam',
+                    gender: 'female',
                 },
                 {
                     id: 1011,
@@ -325,6 +341,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1012,
@@ -339,6 +356,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1013,
@@ -353,6 +371,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1014,
@@ -367,6 +386,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1015,
@@ -381,6 +401,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1016,
@@ -395,6 +416,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1017,
@@ -409,6 +431,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'webcam',
+                    gender: 'female',
                 },
                 {
                     id: 1018,
@@ -423,6 +446,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1019,
@@ -437,6 +461,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1020,
@@ -451,6 +476,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1021,
@@ -465,6 +491,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'hookup',
+                    gender: 'female',
                 },
                 {
                     id: 1022,
@@ -479,6 +506,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1023,
@@ -493,6 +521,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1024,
@@ -507,6 +536,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'webcam',
+                    gender: 'female',
                 },
                 {
                     id: 1025,
@@ -521,6 +551,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1026,
@@ -535,6 +566,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1027,
@@ -549,6 +581,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'hookup',
+                    gender: 'female',
                 },
                 {
                     id: 1028,
@@ -563,6 +596,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'connection',
+                    gender: 'female',
                 },
                 {
                     id: 1029,
@@ -577,6 +611,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'fun',
+                    gender: 'female',
                 },
                 {
                     id: 1030,
@@ -591,6 +626,7 @@ const App: React.FC = () => {
                     dislikes: [],
                     matches: [],
                     lookingFor: 'webcam',
+                    gender: 'female',
                 }
             ];
             saveAllUsers(seedProfiles);

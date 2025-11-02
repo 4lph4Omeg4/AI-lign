@@ -12,6 +12,7 @@ const SearchUsers: React.FC<SearchUsersProps> = ({ currentUser, onGoBack, onStar
     const [ageMin, setAgeMin] = useState(18);
     const [ageMax, setAgeMax] = useState(45);
     const [lookingForFilter, setLookingForFilter] = useState<'all' | 'fun' | 'webcam' | 'connection' | 'hookup'>('all');
+    const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female' | 'non-binary' | 'other' | 'prefer-not-to-say'>('all');
 
     // Get all users except current user
     const allUsers = useMemo(() => {
@@ -35,9 +36,20 @@ const SearchUsers: React.FC<SearchUsersProps> = ({ currentUser, onGoBack, onStar
             // Filter by "looking for" if specified
             if (lookingForFilter !== 'all' && user.lookingFor !== lookingForFilter) return false;
             
+            // Filter by gender if specified
+            if (genderFilter !== 'all' && user.gender !== genderFilter) return false;
+            
             return true;
         });
-    }, [allUsers, currentUser.id, ageMin, ageMax, lookingForFilter]);
+    }, [allUsers, currentUser.id, ageMin, ageMax, lookingForFilter, genderFilter]);
+
+    const GENDER_OPTIONS = [
+        { value: 'all', label: 'All', emoji: '🌍' },
+        { value: 'male', label: 'Male', emoji: '👨' },
+        { value: 'female', label: 'Female', emoji: '👩' },
+        { value: 'non-binary', label: 'Non-Binary', emoji: '⚧️' },
+        { value: 'prefer-not-to-say', label: 'Prefer not to say', emoji: '🤐' },
+    ];
 
     const LOOKING_FOR_OPTIONS = [
         { value: 'all', label: 'All', emoji: '🌍' },
@@ -99,6 +111,27 @@ const SearchUsers: React.FC<SearchUsersProps> = ({ currentUser, onGoBack, onStar
                         </div>
                     </div>
 
+                    {/* Gender Filter */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-bold text-blue-400 mb-4">Gender</label>
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                            {GENDER_OPTIONS.map(option => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => setGenderFilter(option.value as any)}
+                                    className={`p-3 rounded-lg border-2 transition-all ${
+                                        genderFilter === option.value
+                                            ? 'border-blue-400 bg-blue-400/20'
+                                            : 'border-white/20 hover:border-blue-400/50'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-1">{option.emoji}</div>
+                                    <div className="text-xs font-semibold">{option.label}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Looking For Filter */}
                     <div>
                         <label className="block text-sm font-bold text-fuchsia-400 mb-4">Looking For</label>
@@ -110,7 +143,7 @@ const SearchUsers: React.FC<SearchUsersProps> = ({ currentUser, onGoBack, onStar
                                     className={`p-3 rounded-lg border-2 transition-all ${
                                         lookingForFilter === option.value
                                             ? 'border-fuchsia-400 bg-fuchsia-400/20'
-                                            : 'border-white/20 hover:border-cyan-400/50'
+                                            : 'border-white/20 hover:border-fuchsia-400/50'
                                     }`}
                                 >
                                     <div className="text-2xl mb-1">{option.emoji}</div>
@@ -136,14 +169,23 @@ const SearchUsers: React.FC<SearchUsersProps> = ({ currentUser, onGoBack, onStar
                                     <div className="p-4">
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="font-bold text-lg">{user.name}, {user.age}</h3>
-                                            {user.lookingFor && (
-                                                <span className="text-xs bg-fuchsia-400/20 text-fuchsia-400 px-2 py-1 rounded-full">
-                                                    {user.lookingFor === 'fun' && '😊'}
-                                                    {user.lookingFor === 'webcam' && '🔥'}
-                                                    {user.lookingFor === 'connection' && '💝'}
-                                                    {user.lookingFor === 'hookup' && '🔥💋'}
-                                                </span>
-                                            )}
+                                            <div className="flex items-center space-x-1">
+                                                {user.gender && (
+                                                    <span className="text-xs bg-blue-400/20 text-blue-400 px-2 py-1 rounded-full">
+                                                        {user.gender === 'male' && '👨'}
+                                                        {user.gender === 'female' && '👩'}
+                                                        {user.gender === 'non-binary' && '⚧️'}
+                                                    </span>
+                                                )}
+                                                {user.lookingFor && (
+                                                    <span className="text-xs bg-fuchsia-400/20 text-fuchsia-400 px-2 py-1 rounded-full">
+                                                        {user.lookingFor === 'fun' && '😊'}
+                                                        {user.lookingFor === 'webcam' && '🔥'}
+                                                        {user.lookingFor === 'connection' && '💝'}
+                                                        {user.lookingFor === 'hookup' && '🔥💋'}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <p className="text-sm text-gray-400 line-clamp-2 mb-3">{user.bio}</p>
                                         <div className="flex gap-2 mb-3 flex-wrap">

@@ -15,6 +15,7 @@ export interface UserProfile {
   unlockedPhotos?: Record<number, string[]>; // userId -> approved photo URLs
   photoRequests?: Record<number, string[]>; // userId -> pending requested photo URLs
   lookingFor?: 'fun' | 'webcam' | 'connection' | 'hookup'; // What the user is looking for
+  gender?: 'male' | 'female' | 'non-binary' | 'other' | 'prefer-not-to-say'; // User's gender
 }
 
 export interface Message {

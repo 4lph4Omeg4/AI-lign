@@ -34,6 +34,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
     const [imagePreview, setImagePreview] = useState<string | null>(userProfile.imageUrl);
     const [privatePhotos, setPrivatePhotos] = useState<string[]>(userProfile.privatePhotos || []);
     const [lookingFor, setLookingFor] = useState<'fun' | 'webcam' | 'connection' | 'hookup' | undefined>(userProfile.lookingFor);
+    const [gender, setGender] = useState<'male' | 'female' | 'non-binary' | 'other' | 'prefer-not-to-say' | undefined>(userProfile.gender);
 
     const compressImage = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -137,6 +138,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
             imageUrl: imagePreview,
             privatePhotos,
             lookingFor,
+            gender,
         });
     };
     
@@ -193,8 +195,45 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
                                 </div>
                             </div>
                             
-                            {/* Right column: Looking For & Private Photos */}
+                            {/* Right column: Gender, Looking For & Private Photos */}
                             <div className="space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-blue-400 mb-3">Gender</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setGender('male')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${gender === 'male' ? 'border-blue-400 bg-blue-400/20' : 'border-white/20 hover:border-blue-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">👨</div>
+                                            <div className="text-xs font-semibold">Male</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setGender('female')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${gender === 'female' ? 'border-pink-400 bg-pink-400/20' : 'border-white/20 hover:border-pink-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">👩</div>
+                                            <div className="text-xs font-semibold">Female</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setGender('non-binary')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${gender === 'non-binary' ? 'border-yellow-400 bg-yellow-400/20' : 'border-white/20 hover:border-yellow-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">⚧️</div>
+                                            <div className="text-xs font-semibold">Non-Binary</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setGender('prefer-not-to-say')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${gender === 'prefer-not-to-say' ? 'border-gray-400 bg-gray-400/20' : 'border-white/20 hover:border-gray-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">🤐</div>
+                                            <div className="text-xs font-semibold">Prefer not to say</div>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div>
                                     <h3 className="text-lg font-bold text-cyan-400 mb-3">What I'm Looking For</h3>
                                     <div className="grid grid-cols-2 gap-2">
