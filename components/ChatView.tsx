@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { UserProfile, Message } from '../types';
 import { generateChatResponse } from '../services/geminiService';
 
@@ -159,7 +159,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
             }, 100);
             return () => clearTimeout(timer);
         }
-    }, [messages.length, matchedProfile.id, onUpdateConversation]);
+    }, [messages, matchedProfile.id, onUpdateConversation]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
