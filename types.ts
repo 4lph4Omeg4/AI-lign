@@ -11,6 +11,9 @@ export interface UserProfile {
   dislikes: number[];
   matches: number[];
   matchTimestamps?: Record<number, string>; // matchId -> ISO timestamp
+  privatePhotos?: string[]; // Array of private photo URLs
+  unlockedPhotos?: Record<number, string[]>; // userId -> approved photo URLs
+  photoRequests?: Record<number, string[]>; // userId -> pending requested photo URLs
 }
 
 export interface Message {

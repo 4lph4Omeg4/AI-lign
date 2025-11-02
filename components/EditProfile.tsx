@@ -32,6 +32,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
     const [interests, setInterests] = useState<string[]>(userProfile.interests);
     const [currentInterest, setCurrentInterest] = useState('');
     const [imagePreview, setImagePreview] = useState<string | null>(userProfile.imageUrl);
+    const [privatePhotos, setPrivatePhotos] = useState<string[]>(userProfile.privatePhotos || []);
 
     const compressImage = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -88,6 +89,24 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
         }
     };
 
+    const handlePrivatePhotoAdd = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const compressedImage = await compressImage(file);
+                setPrivatePhotos([...privatePhotos, compressedImage]);
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                alert('Failed to process image. Please try another.');
+            }
+        }
+        if (e.target) e.target.value = '';
+    };
+
+    const removePrivatePhoto = (indexToRemove: number) => {
+        setPrivatePhotos(privatePhotos.filter((_, index) => index !== indexToRemove));
+    };
+
     const handleAddInterest = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && currentInterest.trim() !== '') {
             e.preventDefault();
@@ -115,6 +134,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
             bio,
             interests,
             imageUrl: imagePreview,
+            privatePhotos,
         });
     };
     
@@ -127,9 +147,11 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
             
             <div className="relative z-10 flex flex-col h-screen p-4 md:p-8">
                 <Header />
-                <main className="flex-grow flex items-center justify-center animate-fade-in-up">
-                    <form onSubmit={handleSubmit} className="w-full max-w-lg bg-gray-800/50 backdrop-blur-xl border border-white/20 rounded-2xl p-8 space-y-6">
+                <main className="flex-grow flex items-center justify-center animate-fade-in-up overflow-y-auto">
+                    <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-gray-800/50 backdrop-blur-xl border border-white/20 rounded-2xl p-8 space-y-6">
                         <h2 className="text-2xl font-bold text-center text-cyan-300">Edit Your Profile</h2>
+                        
+                        {/* Top section: Profile photo, name, age in a row */}
                         <div className="flex flex-col md:flex-row gap-6">
                             <div className="flex-shrink-0">
                                 <label htmlFor="photo-upload" className="cursor-pointer group">
@@ -146,23 +168,57 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
                                <Input placeholder="Age" type="number" value={age} onChange={e => setAge(e.target.value)} required />
                             </div>
                         </div>
-                        <div>
-                           <Textarea placeholder="About you..." value={bio} onChange={e => setBio(e.target.value)} rows={3} required />
-                        </div>
-                        <div>
-                             <Input 
-                                placeholder="Add an interest and press Enter" 
-                                value={currentInterest}
-                                onChange={e => setCurrentInterest(e.target.value)}
-                                onKeyDown={handleAddInterest}
-                            />
-                            <div className="flex flex-wrap gap-2 mt-3">
-                                {interests.map((interest, index) => (
-                                    <InterestChip key={index} text={interest} onRemove={() => removeInterest(index)} />
-                                ))}
+                        
+                        {/* Two column layout for bio, interests, and private photos */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Left column: Bio and Interests */}
+                            <div className="space-y-6">
+                                <div>
+                                   <Textarea placeholder="About you..." value={bio} onChange={e => setBio(e.target.value)} rows={4} required />
+                                </div>
+                                <div>
+                                     <Input 
+                                        placeholder="Add an interest and press Enter" 
+                                        value={currentInterest}
+                                        onChange={e => setCurrentInterest(e.target.value)}
+                                        onKeyDown={handleAddInterest}
+                                    />
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {interests.map((interest, index) => (
+                                            <InterestChip key={index} text={interest} onRemove={() => removeInterest(index)} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Right column: Private Photos */}
+                            <div>
+                                <h3 className="text-lg font-bold text-fuchsia-400 mb-3">🔒 Private Photos</h3>
+                                <p className="text-xs text-gray-400 mb-3">Add photos that others can request to view</p>
+                                <label htmlFor="private-photo-upload" className="cursor-pointer">
+                                    <div className="w-full bg-gray-900/50 border-2 border-dashed border-fuchsia-400/30 rounded-lg px-4 py-3 text-center text-gray-400 hover:border-fuchsia-400/50 hover:text-fuchsia-400 transition-colors">
+                                        + Add Private Photo
+                                    </div>
+                                </label>
+                                <input id="private-photo-upload" type="file" accept="image/*" className="hidden" onChange={handlePrivatePhotoAdd} />
+                                <div className="grid grid-cols-3 gap-3 mt-3">
+                                    {privatePhotos.map((photo, index) => (
+                                        <div key={index} className="relative group">
+                                            <img src={photo} alt={`Private ${index + 1}`} className="w-full h-24 object-cover rounded-lg border border-fuchsia-400/30" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removePrivatePhoto(index)}
+                                                className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                        <div className="flex gap-4">
+                        
+                        <div className="flex gap-4 pt-4 border-t border-white/10">
                              <button 
                                 type="button" 
                                 onClick={onCancel}

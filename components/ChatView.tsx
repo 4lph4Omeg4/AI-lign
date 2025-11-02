@@ -11,6 +11,7 @@ interface ChatViewProps {
     onBlock: (profile: UserProfile) => void;
     showNotification: (title: string, options: NotificationOptions) => void;
     onInitiateVideoChat: () => void;
+    onRequestPhotos?: (fromUserId: number, toUserId: number, photoUrls: string[]) => void;
 }
 
 const ReadReceiptIcon: React.FC<{ isRead: boolean }> = memo(({ isRead }) => (
@@ -114,7 +115,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
 
 MessageBubble.displayName = 'MessageBubble';
 
-const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messages, onUpdateConversation, onGoBack, onBlock, showNotification, onInitiateVideoChat }) => {
+const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messages, onUpdateConversation, onGoBack, onBlock, showNotification, onInitiateVideoChat, onRequestPhotos }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showMenu, setShowMenu] = useState(false);
     const [imageToSend, setImageToSend] = useState<File | null>(null);
@@ -252,6 +253,16 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
         }
     };
 
+    const handleRequestPrivatePhotos = () => {
+        if (matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0) {
+            onRequestPhotos?.(userProfile.id, matchedProfile.id, matchedProfile.privatePhotos);
+            showNotification('Private photos requested', {
+                body: `Request sent to ${matchedProfile.name}`,
+                icon: matchedProfile.imageUrl,
+            });
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col">
             {ephemeralInView && (
@@ -364,6 +375,13 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                         <button onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-cyan-300 transition-colors" title="Send Photo">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.122 2.122l7.81-7.81" /></svg>
                         </button>
+                        {matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0 && (
+                            <button onClick={handleRequestPrivatePhotos} className="p-2 text-gray-400 hover:text-fuchsia-300 transition-colors" title="Request Private Photos">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                </svg>
+                            </button>
+                        )}
                         <input type="text" placeholder="Send a message..." className="flex-grow bg-transparent text-white placeholder-gray-500 focus:outline-none ml-2" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleKeyDown}/>
                         <button onClick={handleTextInputSend} className="ml-4 text-cyan-300 disabled:opacity-50 hover:text-cyan-100 transition-colors" disabled={!newMessage.trim()}>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>

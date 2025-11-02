@@ -146,6 +146,10 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    privatePhotos: [
+                        'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=400&auto=format&fit=crop',
+                        'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=400&auto=format&fit=crop'
+                    ],
                 },
                 {
                     id: 1002,
@@ -185,6 +189,11 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    privatePhotos: [
+                        'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=400&auto=format&fit=crop',
+                        'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=400&auto=format&fit=crop',
+                        'https://images.unsplash.com/photo-1504234416406-2d5b66d4fd50?q=80&w=400&auto=format&fit=crop'
+                    ],
                 },
                 {
                     id: 1005,
@@ -552,6 +561,47 @@ const App: React.FC = () => {
             [conversationId]: updateFn(prev[conversationId] || EMPTY_MESSAGES_ARRAY)
         }));
     }, [currentUser]);
+
+    const handleRequestPhotos = useCallback((fromUserId: number, toUserId: number, photoUrls: string[]) => {
+        if (!currentUser) return;
+        
+        // If requesting from the current user, add to their photoRequests
+        if (toUserId === currentUser.id) {
+            const updatedCurrentUser = {
+                ...currentUser,
+                photoRequests: {
+                    ...currentUser.photoRequests,
+                    [fromUserId]: photoUrls
+                }
+            };
+            setCurrentUser(updatedCurrentUser);
+            
+            const allUsers = getAllUsers();
+            const updatedUsers = allUsers.map(u => u.id === updatedCurrentUser.id ? updatedCurrentUser : u);
+            saveAllUsers(updatedUsers);
+        } else if (fromUserId === currentUser.id) {
+            // Current user is requesting from someone else
+            // For now, auto-approve for demo purposes (add real approval flow later)
+            const allUsers = getAllUsers();
+            const targetUser = allUsers.find(u => u.id === toUserId);
+            if (targetUser) {
+                const updatedTargetUser = {
+                    ...targetUser,
+                    unlockedPhotos: {
+                        ...targetUser.unlockedPhotos,
+                        [currentUser.id]: photoUrls
+                    }
+                };
+                const updatedUsers = allUsers.map(u => u.id === updatedTargetUser.id ? updatedTargetUser : u);
+                saveAllUsers(updatedUsers);
+                
+                // If we're currently viewing this profile, update chattingWith
+                if (chattingWith && chattingWith.id === toUserId) {
+                    setChattingWith(updatedTargetUser);
+                }
+            }
+        }
+    }, [currentUser, chattingWith]);
     
     const currentProfileForSwiping = swipeQueue[currentIndex];
     
@@ -596,6 +646,7 @@ const App: React.FC = () => {
                     onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
                     showNotification={showNotification}
                     onInitiateVideoChat={() => setCurrentView('videoChat')}
+                    onRequestPhotos={handleRequestPhotos}
                 />;
             }
             // If no chattingWith profile, go back to matches

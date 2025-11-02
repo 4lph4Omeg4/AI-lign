@@ -81,27 +81,39 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, userProfile, 
                     <img src={profile.imageUrl} alt={profile.name} className="w-full h-full object-cover" />
                     <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent"></div>
                     
+                    {/* Info icon in top left */}
+                    <div className="absolute top-4 left-4 p-2 rounded-full bg-black/40 text-white/70 backdrop-blur-sm pointer-events-none" title="View more details">
+                        <InfoIcon />
+                    </div>
+                    
+                    {/* Block button in top right */}
+                    <div className="absolute top-4 right-4" onClick={e => e.stopPropagation()}>
+                        <button onClick={handleBlockClick} title={`Block ${profile.name}`} className="p-2 rounded-full bg-black/40 text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition-colors backdrop-blur-sm">
+                            <BanIcon />
+                        </button>
+                    </div>
+                    
                     <div className="absolute bottom-0 p-6 text-white w-full">
                          <div className="flex justify-between items-start">
                             <div className="flex-grow">
                                 <h2 className="text-3xl font-bold">{profile.name}, <span className="font-light">{profile.age}</span></h2>
                             </div>
-                            <div className="flex items-center space-x-2 flex-shrink-0 ml-4" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
                                  {userProfile && <CompatibilityScore score={compatibilityScore} />}
-                                 <button onClick={handleBlockClick} title={`Block ${profile.name}`} className="p-2 rounded-full text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition-colors">
-                                    <BanIcon />
-                                </button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div className="absolute bottom-5 right-5 p-2 rounded-full bg-black/40 text-white/70 backdrop-blur-sm pointer-events-none" title="View more details">
-                        <InfoIcon />
                     </div>
                 </div>
 
                 {/* CARD BACK */}
                 <div className="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-gradient-to-br from-gray-900 via-purple-900/90 to-blue-900/90 rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border border-white/20 p-6 flex flex-col">
+                    {/* Block button in top right */}
+                    <div className="absolute top-4 right-4" onClick={e => e.stopPropagation()}>
+                        <button onClick={handleBlockClick} title={`Block ${profile.name}`} className="p-2 rounded-full bg-black/40 text-gray-400 hover:bg-red-500/20 hover:text-red-400 transition-colors backdrop-blur-sm">
+                            <BanIcon />
+                        </button>
+                    </div>
+                    
                     <div className="flex-grow overflow-y-auto no-scrollbar pr-2">
                         <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-fuchsia-400 text-transparent bg-clip-text">About Me</h3>
                         <p className="mt-2 text-gray-300 text-sm leading-relaxed font-sans">{profile.bio}</p>
@@ -111,6 +123,25 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, userProfile, 
                             {profile.interests.map(interest => <Chip key={interest} text={interest} />)}
                         </div>
                         
+                        {profile.privatePhotos && profile.privatePhotos.length > 0 && userProfile && (
+                            <div className="mt-6 pt-4 border-t border-white/10">
+                                <h3 className="text-lg font-bold text-fuchsia-400/80 font-mono tracking-wider">🔒 Private Photos</h3>
+                                <div className="text-xs text-gray-400 mt-2 mb-3">
+                                    {userProfile.id === profile.id 
+                                        ? `${profile.privatePhotos.length} private ${profile.privatePhotos.length === 1 ? 'photo' : 'photos'}`
+                                        : profile.unlockedPhotos && profile.unlockedPhotos[userProfile.id] && profile.unlockedPhotos[userProfile.id].length > 0
+                                            ? `${profile.unlockedPhotos[userProfile.id].length} photo(s) unlocked`
+                                            : `${profile.privatePhotos.length} photo(s) locked`}
+                                </div>
+                                {userProfile.id !== profile.id && profile.unlockedPhotos && profile.unlockedPhotos[userProfile.id] && (
+                                    <div className="grid grid-cols-2 gap-2 mt-3">
+                                        {profile.unlockedPhotos[userProfile.id].map((photoUrl, index) => (
+                                            <img key={index} src={photoUrl} alt={`Unlocked ${index + 1}`} className="w-full h-24 object-cover rounded-lg border border-fuchsia-400/30" />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         <div className="mt-6 pt-4 border-t border-white/10">
                             <h3 className="text-lg font-bold text-gray-400/80 font-mono tracking-wider">Profile Views</h3>
                             <div className="flex items-center mt-3 text-gray-300">
