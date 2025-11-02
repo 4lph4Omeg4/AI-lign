@@ -145,13 +145,13 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
     const isFormValid = name && age && bio && interests.length > 0 && imagePreview;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white font-sans overflow-hidden">
+        <div className="min-h-screen bg-gray-900 text-white font-sans">
              <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/50 to-blue-900/70"></div>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAzMiBMMzIgMCBNMzIgMzIgTDAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU5LDAuMDUpIj48L3BhdGg+PC9zdmc+')] opacity-50"></div>
             
-            <div className="relative z-10 flex flex-col h-screen p-4 md:p-8">
+            <div className="relative z-10 min-h-screen p-4 md:p-8">
                 <Header />
-                <main className="flex-grow flex items-center justify-center animate-fade-in-up overflow-y-auto">
+                <main className="flex items-center justify-center animate-fade-in-up py-8">
                     <form onSubmit={handleSubmit} className="w-full max-w-4xl bg-gray-800/50 backdrop-blur-xl border border-white/20 rounded-2xl p-8 space-y-6">
                         <h2 className="text-2xl font-bold text-center text-cyan-300">Edit Your Profile</h2>
                         
