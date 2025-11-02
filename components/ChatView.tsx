@@ -120,13 +120,12 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     const [imageToSend, setImageToSend] = useState<File | null>(null);
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
     const [isEphemeral, setIsEphemeral] = useState(false);
-    const [ephemeralInView, setEphemeralInView] = useState<number | null>(null);
+    const [ephemeralInView, setEphemeralView] = useState<number | null>(null);
     const [isTyping, setIsTyping] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const processedReadMessagesRef = useRef<Set<number>>(new Set());
 
     // Generate unique message IDs that won't conflict even across sessions
     const getUniqueMessageId = () => Date.now() + Math.random();
@@ -137,31 +136,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages.length]); // Only re-run when message count changes
-
-    // Mark messages as read when first entering the chat or when new unread messages arrive
-    // DISABLED TEMPORARILY - using chatMessages dependency instead of messages
-    // useEffect(() => {
-    //     const unreadMessages = messages.filter(msg => msg.sender === 'matched' && !msg.read);
-    //     // Filter out messages we've already processed
-    //     const newUnreadMessages = unreadMessages.filter(msg => !processedReadMessagesRef.current.has(msg.id));
-    //     
-    //     if (newUnreadMessages.length > 0) {
-    //         // Mark these messages as processed
-    //         newUnreadMessages.forEach(msg => processedReadMessagesRef.current.add(msg.id));
-    //         
-    //         // Use setTimeout to avoid update during render
-    //         const timer = setTimeout(() => {
-    //             onUpdateConversation(matchedProfile.id, prevMessages =>
-    //                 prevMessages.map(msg => 
-    //                     msg.sender === 'matched' && !msg.read ? { ...msg, read: true } : msg
-    //                 )
-    //             );
-    //         }, 100);
-    //         return () => clearTimeout(timer);
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [messages.length, matchedProfile.id]);
+    }, [messages]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -176,16 +151,16 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     }, [menuRef]);
 
     const handleSendMessage = async (text: string, imageUrl?: string, ephemeral?: boolean) => {
-        if (!text && !imageUrl) return; // Don't send empty messages
+        if (!text && !imageUrl) return;
         
         const message: Message = {
             id: getUniqueMessageId(),
             text: text || undefined,
             imageUrl,
-            sender: 'user', // In this simulation, the current user is always the sender
-            senderId: userProfile.id, // Store the actual user ID who sent this
+            sender: 'user',
+            senderId: userProfile.id,
             timestamp: new Date(),
-            read: true, // For simplicity, messages are marked as read immediately
+            read: true,
             ephemeral,
             viewed: false,
         };
@@ -210,7 +185,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                         id: getUniqueMessageId(),
                         text: aiResponse,
                         sender: 'matched',
-                        senderId: matchedProfile.id, // Store the matched user's ID
+                        senderId: matchedProfile.id,
                         timestamp: new Date(),
                         read: false,
                     };
@@ -265,7 +240,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
 
     const handleEphemeralViewEnd = (messageId: number) => {
         if (ephemeralInView !== messageId) return;
-        setEphemeralInView(null);
+        setEphemeralView(null);
         onUpdateConversation(matchedProfile.id, prev =>
             prev.map(msg => msg.id === messageId ? { ...msg, viewed: true } : msg)
         );
@@ -363,7 +338,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                                 matchedProfileName={matchedProfile.name}
                                 currentUserId={userProfile.id}
                                 isCurrentlyViewing={ephemeralInView === msg.id}
-                                onStartViewing={setEphemeralInView}
+                                onStartViewing={setEphemeralView}
                                 onEndViewing={handleEphemeralViewEnd}
                             />
                         ))}
