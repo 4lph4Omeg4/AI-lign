@@ -140,27 +140,28 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     }, [messages.length]); // Only re-run when message count changes
 
     // Mark messages as read when first entering the chat or when new unread messages arrive
-    useEffect(() => {
-        const unreadMessages = messages.filter(msg => msg.sender === 'matched' && !msg.read);
-        // Filter out messages we've already processed
-        const newUnreadMessages = unreadMessages.filter(msg => !processedReadMessagesRef.current.has(msg.id));
-        
-        if (newUnreadMessages.length > 0) {
-            // Mark these messages as processed
-            newUnreadMessages.forEach(msg => processedReadMessagesRef.current.add(msg.id));
-            
-            // Use setTimeout to avoid update during render
-            const timer = setTimeout(() => {
-                onUpdateConversation(matchedProfile.id, prevMessages =>
-                    prevMessages.map(msg => 
-                        msg.sender === 'matched' && !msg.read ? { ...msg, read: true } : msg
-                    )
-                );
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [messages.length, matchedProfile.id]);
+    // DISABLED TEMPORARILY - using chatMessages dependency instead of messages
+    // useEffect(() => {
+    //     const unreadMessages = messages.filter(msg => msg.sender === 'matched' && !msg.read);
+    //     // Filter out messages we've already processed
+    //     const newUnreadMessages = unreadMessages.filter(msg => !processedReadMessagesRef.current.has(msg.id));
+    //     
+    //     if (newUnreadMessages.length > 0) {
+    //         // Mark these messages as processed
+    //         newUnreadMessages.forEach(msg => processedReadMessagesRef.current.add(msg.id));
+    //         
+    //         // Use setTimeout to avoid update during render
+    //         const timer = setTimeout(() => {
+    //             onUpdateConversation(matchedProfile.id, prevMessages =>
+    //                 prevMessages.map(msg => 
+    //                     msg.sender === 'matched' && !msg.read ? { ...msg, read: true } : msg
+    //                 )
+    //             );
+    //         }, 100);
+    //         return () => clearTimeout(timer);
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [messages.length, matchedProfile.id]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
