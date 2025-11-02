@@ -21,6 +21,7 @@ import ProfileDetail from './components/ProfileDetail';
 import RandomAnonymousWebcam from './components/RandomAnonymousWebcam';
 import WebcamMenu from './components/WebcamMenu';
 import SearchUsers from './components/SearchUsers';
+import Dashboard from './components/Dashboard';
 
 
 // A custom hook to persist state in localStorage
@@ -78,7 +79,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
     return [storedValue, setValue];
 }
 
-type View = 'auth' | 'profileSetup' | 'swiping' | 'chat' | 'matches' | 'editProfile' | 'videoChat' | 'groupChat' | 'randomWebcam' | 'search';
+type View = 'auth' | 'profileSetup' | 'swiping' | 'chat' | 'matches' | 'editProfile' | 'videoChat' | 'groupChat' | 'randomWebcam' | 'search' | 'dashboard';
 type WebcamMode = 'group' | 'random';
 
 // This simulates a global database of all users
@@ -133,6 +134,27 @@ const App: React.FC = () => {
     useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
+        }
+    }, []);
+
+    // Migration: Add 'lookingFor' field to existing users
+    useEffect(() => {
+        const allUsers = getAllUsers();
+        // Check if any user doesn't have lookingFor
+        const needsMigration = allUsers.some(u => !u.lookingFor);
+        if (needsMigration) {
+            console.log('Migrating users to add lookingFor field...');
+            const updatedUsers = allUsers.map(u => {
+                if (!u.lookingFor) {
+                    // Assign a random lookingFor based on id to keep it consistent
+                    const options: ('fun' | 'webcam' | 'connection' | 'hookup')[] = ['fun', 'webcam', 'connection', 'hookup'];
+                    const lookingForValue = options[u.id % 4];
+                    console.log(`Assigning ${lookingForValue} to user ${u.name} (ID: ${u.id})`);
+                    return { ...u, lookingFor: lookingForValue };
+                }
+                return u;
+            });
+            saveAllUsers(updatedUsers);
         }
     }, []);
 
@@ -325,7 +347,7 @@ const App: React.FC = () => {
             setSwipeQueue(unseenProfiles);
             setCurrentIndex(0);
             if (currentView === 'auth' || currentView === 'profileSetup') {
-              setCurrentView('swiping');
+              setCurrentView('dashboard');
             }
         } else {
             setCurrentView('auth');
@@ -649,6 +671,11 @@ const App: React.FC = () => {
     }
     
     switch(currentView) {
+        case 'dashboard':
+            return <Dashboard 
+                currentUser={currentUser}
+                onNavigate={(view) => setCurrentView(view as View)}
+            />;
         case 'editProfile':
             return <EditProfile 
                 userProfile={currentUser} 
