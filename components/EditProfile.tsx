@@ -33,6 +33,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
     const [currentInterest, setCurrentInterest] = useState('');
     const [imagePreview, setImagePreview] = useState<string | null>(userProfile.imageUrl);
     const [privatePhotos, setPrivatePhotos] = useState<string[]>(userProfile.privatePhotos || []);
+    const [lookingFor, setLookingFor] = useState<'fun' | 'webcam' | 'connection' | 'hookup' | undefined>(userProfile.lookingFor);
 
     const compressImage = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -135,6 +136,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
             interests,
             imageUrl: imagePreview,
             privatePhotos,
+            lookingFor,
         });
     };
     
@@ -191,10 +193,48 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
                                 </div>
                             </div>
                             
-                            {/* Right column: Private Photos */}
-                            <div>
-                                <h3 className="text-lg font-bold text-fuchsia-400 mb-3">🔒 Private Photos</h3>
-                                <p className="text-xs text-gray-400 mb-3">Add photos that others can request to view</p>
+                            {/* Right column: Looking For & Private Photos */}
+                            <div className="space-y-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-cyan-400 mb-3">What I'm Looking For</h3>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setLookingFor('fun')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${lookingFor === 'fun' ? 'border-cyan-400 bg-cyan-400/20' : 'border-white/20 hover:border-cyan-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">😊</div>
+                                            <div className="text-xs font-semibold">Fun Chat</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLookingFor('webcam')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${lookingFor === 'webcam' ? 'border-fuchsia-400 bg-fuchsia-400/20' : 'border-white/20 hover:border-fuchsia-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">🔥</div>
+                                            <div className="text-xs font-semibold">Webcam</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLookingFor('connection')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${lookingFor === 'connection' ? 'border-purple-400 bg-purple-400/20' : 'border-white/20 hover:border-purple-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">💝</div>
+                                            <div className="text-xs font-semibold">Connection</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLookingFor('hookup')}
+                                            className={`p-3 rounded-lg border-2 transition-all ${lookingFor === 'hookup' ? 'border-red-400 bg-red-400/20' : 'border-white/20 hover:border-red-400/50'}`}
+                                        >
+                                            <div className="text-2xl mb-1">🔥💋</div>
+                                            <div className="text-xs font-semibold">Hook Up</div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-fuchsia-400 mb-3">🔒 Private Photos</h3>
+                                    <p className="text-xs text-gray-400 mb-3">Add photos that others can request to view</p>
                                 <label htmlFor="private-photo-upload" className="cursor-pointer">
                                     <div className="w-full bg-gray-900/50 border-2 border-dashed border-fuchsia-400/30 rounded-lg px-4 py-3 text-center text-gray-400 hover:border-fuchsia-400/50 hover:text-fuchsia-400 transition-colors">
                                         + Add Private Photo
@@ -214,6 +254,7 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
                                             </button>
                                         </div>
                                     ))}
+                                </div>
                                 </div>
                             </div>
                         </div>

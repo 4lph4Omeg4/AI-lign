@@ -124,6 +124,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     const [isEphemeral, setIsEphemeral] = useState(false);
     const [ephemeralInView, setEphemeralView] = useState<number | null>(null);
     const [isTyping, setIsTyping] = useState(false);
+    const [showPhotoRequestConfirm, setShowPhotoRequestConfirm] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -256,7 +257,14 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
 
     const handleRequestPrivatePhotos = () => {
         if (matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0) {
+            setShowPhotoRequestConfirm(true);
+        }
+    };
+
+    const confirmRequestPhotos = () => {
+        if (matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0) {
             onRequestPhotos?.(userProfile.id, matchedProfile.id, matchedProfile.privatePhotos);
+            setShowPhotoRequestConfirm(false);
             showNotification('Private photos requested', {
                 body: `Request sent to ${matchedProfile.name}`,
                 icon: matchedProfile.imageUrl,
@@ -314,6 +322,14 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                                 <h2 className="font-bold text-lg leading-tight">{matchedProfile.name}</h2>
                                 <p className="text-xs text-green-400 font-mono">
                                     {isTyping ? 'typing...' : 'Online'}
+                                    {matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0 && 
+                                        !(matchedProfile.unlockedPhotos && userProfile && matchedProfile.unlockedPhotos[userProfile.id]) && (
+                                        <span className="ml-2 text-fuchsia-400">• 🔥 {matchedProfile.privatePhotos.length} spicy photo{matchedProfile.privatePhotos.length > 1 ? 's' : ''}</span>
+                                    )}
+                                    {matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0 && 
+                                        matchedProfile.unlockedPhotos && userProfile && matchedProfile.unlockedPhotos[userProfile.id] && (
+                                        <span className="ml-2 text-green-400">• 🔓 Unlocked</span>
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -397,6 +413,28 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                     </div>
                 </footer>
             </div>
+
+            {/* Photo Request Confirmation Modal */}
+            {showPhotoRequestConfirm && matchedProfile.privatePhotos && matchedProfile.privatePhotos.length > 0 && (
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in" onClick={() => setShowPhotoRequestConfirm(false)}>
+                    <div className="bg-gray-900 rounded-2xl p-6 text-center max-w-sm w-11/12" onClick={e => e.stopPropagation()}>
+                        <div className="text-4xl mb-4">🔒</div>
+                        <h2 className="text-2xl font-bold text-fuchsia-400 mb-2">Request Private Photos?</h2>
+                        <p className="text-gray-300 mb-4">
+                            You want to request {matchedProfile.privatePhotos.length} private {matchedProfile.privatePhotos.length === 1 ? 'photo' : 'photos'} from {matchedProfile.name}.
+                        </p>
+                        <p className="text-xs text-gray-500 mb-6">They can approve or decline your request.</p>
+                        <div className="flex gap-4">
+                            <button onClick={() => setShowPhotoRequestConfirm(false)} className="flex-1 bg-gray-700/50 hover:bg-gray-700 font-bold py-3 px-4 rounded-lg transition-colors">
+                                Cancel
+                            </button>
+                            <button onClick={confirmRequestPhotos} className="flex-1 font-bold py-3 px-4 rounded-lg transition-all bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white hover:shadow-lg hover:shadow-fuchsia-500/50">
+                                Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

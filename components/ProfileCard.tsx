@@ -94,7 +94,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, userProfile, 
                     </div>
                     
                     <div className="absolute bottom-0 p-6 text-white w-full">
-                         <div className="flex justify-between items-start">
+                         <div className="flex justify-between items-start mb-2">
                             <div className="flex-grow">
                                 <h2 className="text-3xl font-bold">{profile.name}, <span className="font-light">{profile.age}</span></h2>
                             </div>
@@ -102,6 +102,22 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, userProfile, 
                                  {userProfile && <CompatibilityScore score={compatibilityScore} />}
                             </div>
                         </div>
+                        {profile.lookingFor && (
+                            <div className="flex items-center mt-1">
+                                <span className="text-2xl">
+                                    {profile.lookingFor === 'fun' && '😊'}
+                                    {profile.lookingFor === 'webcam' && '🔥'}
+                                    {profile.lookingFor === 'connection' && '💝'}
+                                    {profile.lookingFor === 'hookup' && '🔥💋'}
+                                </span>
+                                <span className="ml-2 text-xs font-semibold text-gray-200">
+                                    {profile.lookingFor === 'fun' && 'Fun Chat'}
+                                    {profile.lookingFor === 'webcam' && 'Webcam'}
+                                    {profile.lookingFor === 'connection' && 'Connection'}
+                                    {profile.lookingFor === 'hookup' && 'Hook Up'}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -117,6 +133,26 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile, userProfile, 
                     <div className="flex-grow overflow-y-auto no-scrollbar pr-2">
                         <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-fuchsia-400 text-transparent bg-clip-text">About Me</h3>
                         <p className="mt-2 text-gray-300 text-sm leading-relaxed font-sans">{profile.bio}</p>
+                        
+                        {profile.lookingFor && (
+                            <div className="mt-6 pt-4 border-t border-white/10">
+                                <h3 className="text-lg font-bold text-cyan-400 mb-3">Looking For</h3>
+                                <div className="flex items-center">
+                                    <span className="text-4xl">
+                                        {profile.lookingFor === 'fun' && '😊'}
+                                        {profile.lookingFor === 'webcam' && '🔥'}
+                                        {profile.lookingFor === 'connection' && '💝'}
+                                        {profile.lookingFor === 'hookup' && '🔥💋'}
+                                    </span>
+                                    <span className="ml-3 text-base font-bold text-gray-200">
+                                        {profile.lookingFor === 'fun' && 'Just a Fun Chat'}
+                                        {profile.lookingFor === 'webcam' && 'Webcam Tease & Release'}
+                                        {profile.lookingFor === 'connection' && 'Lasting Deeper Connection'}
+                                        {profile.lookingFor === 'hookup' && 'Hot Hookup in Reality'}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                         
                         <h3 className="mt-6 text-2xl font-bold bg-gradient-to-r from-cyan-300 to-fuchsia-400 text-transparent bg-clip-text">Interests</h3>
                         <div className="mt-3 flex flex-wrap gap-2">

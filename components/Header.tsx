@@ -5,9 +5,11 @@ interface HeaderProps {
     showModelsButton?: boolean;
     onDarkRoomClick?: () => void;
     showDarkRoomButton?: boolean;
+    onSearchClick?: () => void;
+    showSearchButton?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ onShowModelsClick, showModelsButton = false, onDarkRoomClick, showDarkRoomButton = false }) => {
+const Header: React.FC<HeaderProps> = ({ onShowModelsClick, showModelsButton = false, onDarkRoomClick, showDarkRoomButton = false, onSearchClick, showSearchButton = false }) => {
   return (
     <header className="py-6 text-center relative">
       <h1 className="text-5xl md:text-6xl font-bold tracking-tighter bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-transparent bg-clip-text">
@@ -17,21 +19,37 @@ const Header: React.FC<HeaderProps> = ({ onShowModelsClick, showModelsButton = f
         Find Your Frequency
       </p>
       
-      {/* Left side - Dark Room button */}
-      {showDarkRoomButton && (
-        <button 
-            onClick={onDarkRoomClick} 
-            className="absolute top-1/2 left-0 md:left-4 -translate-y-1/2 p-2 rounded-full bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 transition-all shadow-lg hover:shadow-purple-500/50 animate-pulse hover:animate-none" 
-            title="Join Dark Room 🌙"
-        >
+      {/* Left side - Multiple buttons */}
+      <div className="absolute top-1/2 left-0 md:left-4 -translate-y-1/2 flex items-center space-x-2">
+        {/* Search button */}
+        {showSearchButton && onSearchClick && (
+          <button 
+              onClick={onSearchClick} 
+              className="p-2 rounded-full text-green-400 hover:bg-green-400/20 hover:text-green-100 transition-colors" 
+              title="Search Users 🔍"
+          >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+          </button>
+        )}
+
+        {/* Dark Room button */}
+        {showDarkRoomButton && (
+          <button 
+              onClick={onDarkRoomClick} 
+              className="relative p-2 rounded-full bg-gradient-to-br from-purple-600 to-fuchsia-600 text-white hover:from-purple-500 hover:to-fuchsia-500 transition-all shadow-lg hover:shadow-purple-500/50 animate-pulse hover:animate-none" 
+              title="Join Dark Room 🌙"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold animate-bounce">
                 {3 + Math.floor(Math.random() * 7)}
             </span>
-        </button>
-      )}
+          </button>
+        )}
+      </div>
 
       {/* Right side - Matches button */}
       {showModelsButton && (

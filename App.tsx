@@ -18,6 +18,9 @@ import VideoChatView from './components/VideoChatView';
 import AuthView from './components/AuthView';
 import AnonymousGroupChat from './components/AnonymousGroupChat';
 import ProfileDetail from './components/ProfileDetail';
+import RandomAnonymousWebcam from './components/RandomAnonymousWebcam';
+import WebcamMenu from './components/WebcamMenu';
+import SearchUsers from './components/SearchUsers';
 
 
 // A custom hook to persist state in localStorage
@@ -75,7 +78,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
     return [storedValue, setValue];
 }
 
-type View = 'auth' | 'profileSetup' | 'swiping' | 'chat' | 'matches' | 'editProfile' | 'videoChat' | 'groupChat';
+type View = 'auth' | 'profileSetup' | 'swiping' | 'chat' | 'matches' | 'editProfile' | 'videoChat' | 'groupChat' | 'randomWebcam' | 'search';
+type WebcamMode = 'group' | 'random';
 
 // This simulates a global database of all users
 const getAllUsers = (): UserProfile[] => {
@@ -123,6 +127,7 @@ const App: React.FC = () => {
     const [showConfirmModal, setShowConfirmModal] = useState<{isOpen: boolean, onConfirm: () => void, title: string, message: string, confirmText: string}>({isOpen: false, onConfirm: () => {}, title: '', message: '', confirmText: 'Confirm'});
     const [toast, setToast] = useState({ show: false, message: '' });
     const [viewingProfile, setViewingProfile] = useState<UserProfile | null>(null);
+    const [webcamMode, setWebcamMode] = useState<WebcamMode | null>(null);
 
     // Request notification permission on mount
     useEffect(() => {
@@ -148,6 +153,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'connection',
                     privatePhotos: [
                         'https://images.unsplash.com/photo-1517849845537-4d257902454a?q=80&w=400&auto=format&fit=crop',
                         'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=400&auto=format&fit=crop'
@@ -165,6 +171,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'fun',
                 },
                 {
                     id: 1003,
@@ -178,6 +185,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'webcam',
                 },
                 {
                     id: 1004,
@@ -191,6 +199,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'hookup',
                     privatePhotos: [
                         'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=400&auto=format&fit=crop',
                         'https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=400&auto=format&fit=crop',
@@ -209,6 +218,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'connection',
                 },
                 {
                     id: 1006,
@@ -222,6 +232,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'hookup',
                 },
                 {
                     id: 1007,
@@ -235,6 +246,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'fun',
                 },
                 {
                     id: 1008,
@@ -248,6 +260,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'connection',
                 },
                 {
                     id: 1009,
@@ -261,6 +274,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'fun',
                 },
                 {
                     id: 1010,
@@ -274,6 +288,7 @@ const App: React.FC = () => {
                     likes: [],
                     dislikes: [],
                     matches: [],
+                    lookingFor: 'webcam',
                 }
             ];
             saveAllUsers(seedProfiles);
@@ -682,8 +697,29 @@ const App: React.FC = () => {
             setCurrentView('chat');
             return null;
         case 'groupChat':
+            if (!webcamMode) {
+                return <WebcamMenu 
+                    currentUser={currentUser}
+                    onSelectMode={(mode) => {
+                        setWebcamMode(mode);
+                    }}
+                    onGoBack={() => setCurrentView('swiping')}
+                />;
+            }
+            if (webcamMode === 'random') {
+                return <RandomAnonymousWebcam 
+                    currentUser={currentUser}
+                    onLeave={() => {
+                        setWebcamMode(null);
+                        setCurrentView('swiping');
+                    }}
+                />;
+            }
             return <AnonymousGroupChat 
-                onLeave={() => setCurrentView('swiping')}
+                onLeave={() => {
+                    setWebcamMode(null);
+                    setCurrentView('swiping');
+                }}
             />;
         case 'matches':
             const allUsers = getAllUsers();
@@ -722,6 +758,13 @@ const App: React.FC = () => {
                     )}
                 </>
             );
+        case 'search':
+            return <SearchUsers 
+                currentUser={currentUser}
+                onGoBack={() => setCurrentView('swiping')}
+                onStartChat={handleStartConversation}
+                onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
+            />;
         case 'swiping':
         default:
              return (
@@ -735,6 +778,8 @@ const App: React.FC = () => {
                             showModelsButton 
                             onDarkRoomClick={() => setCurrentView('groupChat')}
                             showDarkRoomButton
+                            onSearchClick={() => setCurrentView('search')}
+                            showSearchButton
                         />
                         <main className="flex-grow flex flex-col items-center justify-center relative">
                             <div className="w-full max-w-sm h-[70vh] max-h-[600px] relative">
