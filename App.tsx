@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { UserProfile, Message } from './types';
 
 import ProfileSetup from './components/ProfileSetup';
@@ -109,6 +109,9 @@ const App: React.FC = () => {
     const [showPickupLineModal, setShowPickupLineModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState<{isOpen: boolean, onConfirm: () => void, title: string, message: string, confirmText: string}>({isOpen: false, onConfirm: () => {}, title: '', message: '', confirmText: 'Confirm'});
     const [toast, setToast] = useState({ show: false, message: '' });
+    
+    // Stable empty array ref to prevent unnecessary re-renders
+    const emptyMessagesArray = useRef<Message[]>([]);
 
     // Request notification permission on mount
     useEffect(() => {
@@ -547,9 +550,9 @@ const App: React.FC = () => {
     const chatMessages = useMemo(() => {
         if (chattingWith && currentUser) {
             const conversationId = [currentUser.id, chattingWith.id].sort().join('-');
-            return conversations[conversationId] || [];
+            return conversations[conversationId] || emptyMessagesArray.current;
         }
-        return [];
+        return emptyMessagesArray.current;
     }, [conversations, chattingWith, currentUser]);
 
     // MAIN RENDER LOGIC
