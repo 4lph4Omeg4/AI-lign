@@ -70,6 +70,18 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                             ✨ Your premium dating experience awaits
                         </p>
                     </div>
+                    <button
+                        onClick={() => onNavigate('editProfile')}
+                        className="group relative overflow-hidden bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 rounded-2xl px-6 py-3 transition-all shadow-xl hover:shadow-cyan-500/20 border border-white/10 hover:border-cyan-400/30"
+                    >
+                        <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-fuchsia-500 flex items-center justify-center">
+                                <span className="text-sm">⚙️</span>
+                            </div>
+                            <span className="font-bold text-white">Profile</span>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </button>
                 </div>
 
                 {/* Premium Quick Action Buttons */}
