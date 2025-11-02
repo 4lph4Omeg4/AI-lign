@@ -228,13 +228,12 @@ const VideoChatView: React.FC<VideoChatViewProps> = ({ matchedProfile, onEndCall
             </div>
 
             {/* Local Video Preview */}
-            <div className="absolute top-20 md:top-24 right-4 md:right-6 z-20 group">
+            <div className="absolute bottom-24 right-4 z-20 group">
                 {isVideoOff ? (
-                    <div className="w-32 h-48 md:w-40 md:h-56 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border-2 border-cyan-400/50 shadow-2xl flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-2">
-                            <span className="text-2xl">📷</span>
+                    <div className="w-32 h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border-2 border-cyan-400/50 shadow-2xl flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                            <span className="text-xl">📷</span>
                         </div>
-                        <p className="text-xs text-gray-400">Camera Off</p>
                     </div>
                 ) : (
                     <video
@@ -242,12 +241,9 @@ const VideoChatView: React.FC<VideoChatViewProps> = ({ matchedProfile, onEndCall
                         autoPlay
                         muted
                         playsInline
-                        className="w-32 h-48 md:w-40 md:h-56 object-cover rounded-xl border-2 border-cyan-400/50 shadow-2xl transition-all group-hover:border-cyan-400 group-hover:shadow-cyan-500/50"
+                        className="w-32 h-32 object-cover rounded-xl border-2 border-cyan-400/50 shadow-2xl transition-all group-hover:border-cyan-400 group-hover:shadow-cyan-500/50"
                     />
                 )}
-                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-mono">
-                    You
-                </div>
             </div>
             
             {/* Error Message */}

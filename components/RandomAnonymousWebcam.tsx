@@ -206,9 +206,9 @@ const RandomAnonymousWebcam: React.FC<RandomAnonymousWebcamProps> = ({ currentUs
             <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/50 to-blue-900/70"></div>
             
             {/* Main Video Area */}
-            <div className="absolute inset-0 flex" style={{ paddingTop: showControls ? '80px' : '0' }}>
+            <div className="absolute inset-0" style={{ paddingTop: showControls ? '80px' : '0' }}>
                 {/* Partner Video */}
-                <div className="flex-1 relative bg-gray-800 flex items-center justify-center">
+                <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
                     {isConnecting ? (
                         <div className="text-center animate-fade-in">
                             <div className="animate-spin rounded-full h-20 w-20 border-b-2 border-pink-500 mx-auto mb-4"></div>
@@ -248,32 +248,24 @@ const RandomAnonymousWebcam: React.FC<RandomAnonymousWebcamProps> = ({ currentUs
                         </>
                     ) : null}
                 </div>
+            </div>
 
-                {/* Your Video (Small) */}
-                <div 
-                    className={`w-80 border-l border-white/10 bg-gray-900/50 backdrop-blur-sm transition-all duration-300 ${showControls ? 'block' : 'hidden'}`}
-                    style={{ height: showControls ? 'calc(100vh - 80px)' : '100vh' }}
-                >
-                    <div className="p-4 h-full flex flex-col">
-                        <div className="flex-1 relative bg-gray-800 rounded-lg overflow-hidden flex items-center justify-center">
-                            {isVideoOff ? (
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-                                    <div className="text-center">
-                                        <div className="text-6xl mb-2">👤</div>
-                                        <p className="text-sm text-white/80">You</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <video
-                                    ref={localVideoRef}
-                                    autoPlay
-                                    muted
-                                    className="w-full h-full object-cover"
-                                />
-                            )}
+            {/* Your Video (Small Square Overlay) */}
+            <div className="absolute bottom-24 right-4 z-20 group">
+                {isVideoOff ? (
+                    <div className="w-32 h-32 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-2 border-purple-400/50 shadow-2xl flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="text-4xl mb-1">👤</div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <video
+                        ref={localVideoRef}
+                        autoPlay
+                        muted
+                        className="w-32 h-32 object-cover rounded-xl border-2 border-purple-400/50 shadow-2xl transition-all group-hover:border-purple-400 group-hover:shadow-purple-500/50"
+                    />
+                )}
             </div>
 
             {/* Controls */}
