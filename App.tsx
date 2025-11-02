@@ -17,6 +17,7 @@ import Toast from './components/Toast';
 import VideoChatView from './components/VideoChatView';
 import AuthView from './components/AuthView';
 import AnonymousGroupChat from './components/AnonymousGroupChat';
+import ProfileDetail from './components/ProfileDetail';
 
 
 // A custom hook to persist state in localStorage
@@ -600,9 +601,13 @@ const App: React.FC = () => {
                 if (chattingWith && chattingWith.id === toUserId) {
                     setChattingWith(updatedTargetUser);
                 }
+                // Also update viewingProfile if we're viewing it
+                if (viewingProfile && viewingProfile.id === toUserId) {
+                    setViewingProfile(updatedTargetUser);
+                }
             }
         }
-    }, [currentUser, chattingWith]);
+    }, [currentUser, chattingWith, viewingProfile]);
     
     const currentProfileForSwiping = swipeQueue[currentIndex];
     
@@ -638,17 +643,29 @@ const App: React.FC = () => {
             />;
         case 'chat':
             if (chattingWith) {
-                return <ChatView 
-                    userProfile={currentUser}
-                    matchedProfile={chattingWith}
-                    messages={chatMessages}
-                    onUpdateConversation={handleUpdateConversation}
-                    onGoBack={() => { setCurrentView('matches'); setChattingWith(null); }}
-                    onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
-                    showNotification={showNotification}
-                    onInitiateVideoChat={() => setCurrentView('videoChat')}
-                    onRequestPhotos={handleRequestPhotos}
-                />;
+                return (
+                    <>
+                        <ChatView 
+                            userProfile={currentUser}
+                            matchedProfile={chattingWith}
+                            messages={chatMessages}
+                            onUpdateConversation={handleUpdateConversation}
+                            onGoBack={() => { setCurrentView('matches'); setChattingWith(null); }}
+                            onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
+                            showNotification={showNotification}
+                            onInitiateVideoChat={() => setCurrentView('videoChat')}
+                            onRequestPhotos={handleRequestPhotos}
+                            onViewProfile={(profile) => setViewingProfile(profile)}
+                        />
+                        {viewingProfile && (
+                            <ProfileDetail
+                                profile={viewingProfile}
+                                currentUser={currentUser}
+                                onClose={() => setViewingProfile(null)}
+                            />
+                        )}
+                    </>
+                );
             }
             // If no chattingWith profile, go back to matches
             console.warn('Chat view opened with no profile selected');
@@ -679,15 +696,32 @@ const App: React.FC = () => {
                 return timestampB.localeCompare(timestampA); // Descending order (newest first)
             });
 
-            return <CompatibleModels 
-                matches={sortedMatches}
-                onStartConversation={handleStartConversation}
-                onGoBack={() => setCurrentView('swiping')}
-                onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
-                onEditProfile={() => setCurrentView('editProfile')}
-                conversations={conversations}
-                currentUserId={currentUser.id}
-            />
+            return (
+                <>
+                    <CompatibleModels 
+                        matches={sortedMatches}
+                        onStartConversation={handleStartConversation}
+                        onGoBack={() => setCurrentView('swiping')}
+                        onBlock={(profile) => setShowConfirmModal({isOpen: true, onConfirm: () => handleBlock(profile), title: `Block ${profile.name}?`, message: 'You will not see their profile or messages again. This is permanent.', confirmText: "Block"})}
+                        onEditProfile={() => setCurrentView('editProfile')}
+                        conversations={conversations}
+                        currentUserId={currentUser.id}
+                        onViewProfile={(profile) => setViewingProfile(profile)}
+                    />
+                    {viewingProfile && (
+                        <ProfileDetail
+                            profile={viewingProfile}
+                            currentUser={currentUser}
+                            onClose={() => setViewingProfile(null)}
+                            onStartChat={() => {
+                                setChattingWith(viewingProfile);
+                                setCurrentView('chat');
+                                setViewingProfile(null);
+                            }}
+                        />
+                    )}
+                </>
+            );
         case 'swiping':
         default:
              return (
@@ -758,6 +792,18 @@ const App: React.FC = () => {
                         message={toast.message}
                         onClose={() => setToast({ show: false, message: '' })}
                     />
+                    {viewingProfile && (
+                        <ProfileDetail
+                            profile={viewingProfile}
+                            currentUser={currentUser}
+                            onClose={() => setViewingProfile(null)}
+                            onStartChat={viewingProfile ? () => {
+                                setChattingWith(viewingProfile);
+                                setCurrentView('chat');
+                                setViewingProfile(null);
+                            } : undefined}
+                        />
+                    )}
                 </div>
             );
     }

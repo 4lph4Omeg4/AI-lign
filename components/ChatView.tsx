@@ -12,6 +12,7 @@ interface ChatViewProps {
     showNotification: (title: string, options: NotificationOptions) => void;
     onInitiateVideoChat: () => void;
     onRequestPhotos?: (fromUserId: number, toUserId: number, photoUrls: string[]) => void;
+    onViewProfile?: (profile: UserProfile) => void;
 }
 
 const ReadReceiptIcon: React.FC<{ isRead: boolean }> = memo(({ isRead }) => (
@@ -115,7 +116,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = memo(({ message, matchedProf
 
 MessageBubble.displayName = 'MessageBubble';
 
-const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messages, onUpdateConversation, onGoBack, onBlock, showNotification, onInitiateVideoChat, onRequestPhotos }) => {
+const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messages, onUpdateConversation, onGoBack, onBlock, showNotification, onInitiateVideoChat, onRequestPhotos, onViewProfile }) => {
     const [newMessage, setNewMessage] = useState('');
     const [showMenu, setShowMenu] = useState(false);
     const [imageToSend, setImageToSend] = useState<File | null>(null);
@@ -318,7 +319,14 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
                         </div>
                     </div>
                     <div className="flex items-center space-x-1">
-                         <button onClick={onInitiateVideoChat} title="Video Call" className="p-2 rounded-full text-cyan-400 hover:bg-cyan-400/20 hover:text-cyan-200 transition-all">
+                        {onViewProfile && (
+                            <button onClick={() => onViewProfile(matchedProfile)} title="View Profile" className="p-2 rounded-full text-fuchsia-400 hover:bg-fuchsia-400/20 hover:text-fuchsia-200 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </button>
+                        )}
+                        <button onClick={onInitiateVideoChat} title="Video Call" className="p-2 rounded-full text-cyan-400 hover:bg-cyan-400/20 hover:text-cyan-200 transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                         </button>
                         <div className="relative" ref={menuRef}>

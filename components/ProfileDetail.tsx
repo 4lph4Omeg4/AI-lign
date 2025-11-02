@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
-import ProfileCard from './ProfileCard';
 
 interface ProfileDetailProps {
     profile: UserProfile;
@@ -12,7 +11,12 @@ interface ProfileDetailProps {
 const ProfileDetail: React.FC<ProfileDetailProps> = ({ profile, currentUser, onClose, onStartChat }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    const allImages = [profile.imageUrl, ...(profile.privatePhotos || [])];
+    // Show different images based on if viewing own profile or someone else's
+    const allImages = currentUser && currentUser.id === profile.id
+        ? [profile.imageUrl, ...(profile.privatePhotos || [])]
+        : profile.unlockedPhotos && currentUser && profile.unlockedPhotos[currentUser.id]
+            ? [profile.imageUrl, ...profile.unlockedPhotos[currentUser.id]]
+            : [profile.imageUrl];
 
     return (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
