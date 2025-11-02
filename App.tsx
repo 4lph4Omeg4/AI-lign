@@ -530,7 +530,7 @@ const App: React.FC = () => {
             };
             setConversations(prev => ({
                 ...prev,
-                [conversationId]: [...(prev[conversationId] || []), userMessage]
+                [conversationId]: [...(prev[conversationId] || emptyMessagesArray.current), userMessage]
             }));
         }
     };
@@ -540,7 +540,7 @@ const App: React.FC = () => {
         const conversationId = [currentUser.id, matchedProfileId].sort().join('-');
         setConversations(prev => ({
             ...prev,
-            [conversationId]: updateFn(prev[conversationId] || [])
+            [conversationId]: updateFn(prev[conversationId] || emptyMessagesArray.current)
         }));
     }, [currentUser]);
     
