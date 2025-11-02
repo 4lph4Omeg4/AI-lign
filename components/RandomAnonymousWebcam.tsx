@@ -72,7 +72,6 @@ const RandomAnonymousWebcam: React.FC<RandomAnonymousWebcamProps> = ({ currentUs
     const [isConnecting, setIsConnecting] = useState(true);
     const [showControls, setShowControls] = useState(true);
     const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-    const [ratePartner, setRatePartner] = useState<boolean | null>(null);
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const hideControlsTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -178,28 +177,20 @@ const RandomAnonymousWebcam: React.FC<RandomAnonymousWebcamProps> = ({ currentUs
         onLeave();
     };
 
-    const handleRating = (liked: boolean) => {
-        setRatePartner(liked);
-        setTimeout(() => {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-            onLeave();
-        }, 1000);
+    const handleNextBlindDate = () => {
+        setIsConnecting(true);
+        setPartner(null);
+        setConnectionTime(0);
+        
+        // Generate new partner
+        const connectDelay = setTimeout(() => {
+            const randomPartner = generateParticipant();
+            setPartner(randomPartner);
+            setIsConnecting(false);
+        }, 2000 + Math.random() * 3000);
+        
+        return () => clearTimeout(connectDelay);
     };
-
-    if (ratePartner !== null) {
-        return (
-            <div className="min-h-screen bg-gray-900 text-white font-sans flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/50 to-blue-900/70"></div>
-                <div className="relative z-10 text-center animate-fade-in">
-                    <div className="text-6xl mb-4">{ratePartner ? '💚' : '💔'}</div>
-                    <h2 className="text-2xl font-bold mb-2">{ratePartner ? 'Match!' : 'Passed'}</h2>
-                    <p className="text-gray-400">Looking for someone new...</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gray-900 text-white font-sans overflow-hidden relative">
@@ -328,26 +319,16 @@ const RandomAnonymousWebcam: React.FC<RandomAnonymousWebcamProps> = ({ currentUs
                             </svg>
                         </button>
 
-                        {/* Like/Dislike Buttons */}
-                        {partner && (
-                            <>
-                                <button
-                                    onClick={() => handleRating(false)}
-                                    className="w-16 h-16 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all hover:scale-110"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                                <button
-                                    onClick={() => handleRating(true)}
-                                    className="w-16 h-16 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all hover:scale-110"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                                    </svg>
-                                </button>
-                            </>
+                        {/* Next Blind Date Button */}
+                        {partner && !isConnecting && (
+                            <button
+                                onClick={handleNextBlindDate}
+                                className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 flex items-center justify-center transition-all hover:scale-110 shadow-lg"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                                </svg>
+                            </button>
                         )}
                     </div>
                 </div>

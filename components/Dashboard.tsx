@@ -42,105 +42,138 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
     const displayedUsers = activeTab === 'new' ? newUsers : onlineUsers;
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900/50 to-blue-900/70"></div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAzMiBMMzIgMCBNMzIgMzIgTDAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU5LDAuMDUpIj48L3BhdGg+PC9zdmc+')] opacity-50"></div>
+        <div className="min-h-screen bg-gray-950 text-white font-sans flex flex-col relative overflow-hidden">
+            {/* Animated Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-purple-950/60 to-blue-950/60"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.15),transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.15),transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAzMiBMMzIgMCBNMzIgMzIgTDAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU5LDAuMDMpIj48L3BhdGg+PC9zdmc+')] opacity-30"></div>
             
-            <div className="relative z-10 flex flex-col h-screen p-4 md:p-8">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-fuchsia-500 text-transparent bg-clip-text">
-                            Welcome back, {currentUser.name}
-                        </h1>
-                        <p className="text-sm text-cyan-300/80 mt-1 font-mono">
-                            Ready to find your frequency?
+            <div className="relative z-10 flex flex-col h-screen p-6 md:p-10">
+                {/* Premium Header */}
+                <div className="flex items-center justify-between mb-10">
+                    <div className="animate-fade-in">
+                        <div className="flex items-center space-x-3 mb-2">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-fuchsia-500 p-[2px]">
+                                <div className="w-full h-full rounded-full bg-gray-950 flex items-center justify-center">
+                                    <span className="text-xl">👑</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h1 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-cyan-300 via-fuchsia-400 to-cyan-300 text-transparent bg-clip-text bg-[length:200%] animate-gradient">
+                                    Welcome back
+                                </h1>
+                                <p className="text-lg font-semibold text-gray-300 mt-0.5">{currentUser.name}</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-cyan-300/70 mt-2 font-medium tracking-wide">
+                            ✨ Your premium dating experience awaits
                         </p>
                     </div>
                 </div>
 
-                {/* Quick Action Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {/* Premium Quick Action Buttons */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10 animate-fade-in" style={{ animationDelay: '50ms' }}>
                     <button
                         onClick={() => onNavigate('search')}
-                        className="group relative bg-gradient-to-br from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-2xl p-6 transition-all shadow-lg hover:shadow-green-500/50 animate-fade-in-up"
-                        style={{ animationDelay: '0ms' }}
+                        className="group relative overflow-hidden bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 rounded-3xl p-8 transition-all shadow-2xl hover:shadow-emerald-500/30 hover:scale-[1.02] border border-emerald-400/20 hover:border-emerald-400/40"
                     >
-                        <div className="text-4xl mb-3">🔍</div>
-                        <h3 className="text-xl font-bold mb-2">Search Users</h3>
-                        <p className="text-sm text-green-100/80">Find profiles by filters</p>
-                        <div className="absolute inset-0 rounded-2xl border-2 border-green-400/0 group-hover:border-green-400/50 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform">🔍</div>
+                            <h3 className="text-2xl font-black mb-2 text-white">Search</h3>
+                            <p className="text-sm text-emerald-50/90 font-medium">Advanced filters & discovery</p>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="absolute -top-1/2 -right-1/2 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
                     </button>
 
                     <button
                         onClick={() => onNavigate('groupChat')}
-                        className="group relative bg-gradient-to-br from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 rounded-2xl p-6 transition-all shadow-lg hover:shadow-purple-500/50 animate-fade-in-up"
-                        style={{ animationDelay: '100ms' }}
+                        className="group relative overflow-hidden bg-gradient-to-br from-fuchsia-600 via-purple-600 to-pink-600 rounded-3xl p-8 transition-all shadow-2xl hover:shadow-fuchsia-500/30 hover:scale-[1.02] border border-fuchsia-400/20 hover:border-fuchsia-400/40"
                     >
-                        <div className="text-4xl mb-3">📹</div>
-                        <h3 className="text-xl font-bold mb-2">Cam Room</h3>
-                        <p className="text-sm text-purple-100/80">Join video sessions</p>
-                        <div className="absolute inset-0 rounded-2xl border-2 border-purple-400/0 group-hover:border-purple-400/50 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform">📹</div>
+                            <h3 className="text-2xl font-black mb-2 text-white">Cam Room</h3>
+                            <p className="text-sm text-purple-50/90 font-medium">Live video connections</p>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="absolute -top-1/2 -right-1/2 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
                     </button>
 
                     <button
                         onClick={() => onNavigate('swiping')}
-                        className="group relative bg-gradient-to-br from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-2xl p-6 transition-all shadow-lg hover:shadow-cyan-500/50 animate-fade-in-up"
-                        style={{ animationDelay: '200ms' }}
+                        className="group relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 rounded-3xl p-8 transition-all shadow-2xl hover:shadow-cyan-500/30 hover:scale-[1.02] border border-cyan-400/20 hover:border-cyan-400/40"
                     >
-                        <div className="text-4xl mb-3">💝</div>
-                        <h3 className="text-xl font-bold mb-2">Matchmaking</h3>
-                        <p className="text-sm text-cyan-100/80">Start swiping now</p>
-                        <div className="absolute inset-0 rounded-2xl border-2 border-cyan-400/0 group-hover:border-cyan-400/50 transition-colors"></div>
+                        <div className="relative z-10">
+                            <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform">💝</div>
+                            <h3 className="text-2xl font-black mb-2 text-white">Matchmaking</h3>
+                            <p className="text-sm text-blue-50/90 font-medium">Find your perfect match</p>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="absolute -top-1/2 -right-1/2 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
                     </button>
                 </div>
 
-                {/* User Thumbnails Section */}
-                <div className="flex-grow overflow-hidden flex flex-col">
-                    <div className="flex space-x-1 mb-4 bg-gray-800/30 backdrop-blur-xl rounded-lg p-1 border border-white/10">
+                {/* Premium User Thumbnails Section */}
+                <div className="flex-grow overflow-hidden flex flex-col bg-black/20 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 shadow-2xl">
+                    <div className="flex space-x-2 mb-6">
                         <button
                             onClick={() => setActiveTab('new')}
-                            className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
+                            className={`flex-1 py-4 px-6 rounded-2xl font-black text-lg transition-all relative overflow-hidden ${
                                 activeTab === 'new'
-                                    ? 'bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white shadow-lg'
-                                    : 'text-gray-400 hover:text-white'
+                                    ? 'bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white shadow-2xl shadow-cyan-500/50'
+                                    : 'bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-900/70 border border-white/10'
                             }`}
                         >
-                            ✨ New Users ({newUsers.length})
+                            {activeTab === 'new' && (
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            )}
+                            <span className="relative z-10 flex items-center justify-center space-x-2">
+                                <span>✨</span>
+                                <span>New ({newUsers.length})</span>
+                            </span>
                         </button>
                         <button
                             onClick={() => setActiveTab('online')}
-                            className={`flex-1 py-3 px-4 rounded-lg font-bold transition-all ${
+                            className={`flex-1 py-4 px-6 rounded-2xl font-black text-lg transition-all relative overflow-hidden ${
                                 activeTab === 'online'
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
-                                    : 'text-gray-400 hover:text-white'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-2xl shadow-emerald-500/50'
+                                    : 'bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-900/70 border border-white/10'
                             }`}
                         >
-                            🟢 Online Now ({onlineUsers.length})
+                            {activeTab === 'online' && (
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            )}
+                            <span className="relative z-10 flex items-center justify-center space-x-2">
+                                <span>🟢</span>
+                                <span>Online ({onlineUsers.length})</span>
+                            </span>
                         </button>
                     </div>
 
                     <div className="flex-grow overflow-y-auto no-scrollbar">
                         {displayedUsers.length === 0 ? (
-                            <div className="text-center py-12 text-gray-500 font-mono">
-                                <p>No users available at the moment.</p>
+                            <div className="text-center py-16">
+                                <div className="text-6xl mb-4">🕸️</div>
+                                <p className="text-gray-400 font-medium text-lg">No users available at the moment</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                 {displayedUsers.map((user: UserProfile) => (
                                     <div 
                                         key={user.id} 
-                                        className="group bg-gray-800/50 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden hover:border-cyan-400/50 transition-all cursor-pointer animate-fade-in-up"
+                                        className="group relative bg-gradient-to-b from-gray-900/80 to-gray-950/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden hover:border-cyan-400/50 hover:scale-[1.05] transition-all cursor-pointer shadow-xl hover:shadow-cyan-500/20"
                                         onClick={() => onNavigate('swiping')}
                                     >
                                         <div className="relative aspect-square">
                                             <img 
                                                 src={user.imageUrl} 
                                                 alt={user.name} 
-                                                className="w-full h-full object-cover" 
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
                                             />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                             {activeTab === 'online' && (
-                                                <div className="absolute top-2 right-2">
+                                                <div className="absolute top-3 right-3">
                                                     <span className="flex h-3 w-3">
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
@@ -148,14 +181,16 @@ const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="p-3">
-                                            <div className="font-bold text-sm truncate">{user.name}, {user.age}</div>
+                                        <div className="p-4 relative z-10">
+                                            <div className="font-black text-sm text-white truncate mb-1">{user.name}, {user.age}</div>
                                             {user.lookingFor && (
-                                                <div className="text-xs text-gray-400 mt-1">
-                                                    {user.lookingFor === 'fun' && '😊'}
-                                                    {user.lookingFor === 'webcam' && '🔥'}
-                                                    {user.lookingFor === 'connection' && '💝'}
-                                                    {user.lookingFor === 'hookup' && '🔥💋'}
+                                                <div className="flex items-center text-xs text-gray-300">
+                                                    <span className="text-base mr-1">
+                                                        {user.lookingFor === 'fun' && '😊'}
+                                                        {user.lookingFor === 'webcam' && '🔥'}
+                                                        {user.lookingFor === 'connection' && '💝'}
+                                                        {user.lookingFor === 'hookup' && '🔥💋'}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>

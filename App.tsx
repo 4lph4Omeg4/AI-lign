@@ -807,6 +807,8 @@ const App: React.FC = () => {
                             showDarkRoomButton
                             onSearchClick={() => setCurrentView('search')}
                             showSearchButton
+                            onDashboardClick={() => setCurrentView('dashboard')}
+                            showDashboardButton
                         />
                         <main className="flex-grow flex flex-col items-center justify-center relative">
                             <div className="w-full max-w-sm h-[70vh] max-h-[600px] relative">
