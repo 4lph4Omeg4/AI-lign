@@ -121,6 +121,7 @@ const App: React.FC = () => {
     const [showPickupLineModal, setShowPickupLineModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState<{isOpen: boolean, onConfirm: () => void, title: string, message: string, confirmText: string}>({isOpen: false, onConfirm: () => {}, title: '', message: '', confirmText: 'Confirm'});
     const [toast, setToast] = useState({ show: false, message: '' });
+    const [viewingProfile, setViewingProfile] = useState<UserProfile | null>(null);
 
     // Request notification permission on mount
     useEffect(() => {

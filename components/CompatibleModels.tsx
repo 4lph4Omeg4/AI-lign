@@ -10,6 +10,7 @@ interface CompatibleModelsProps {
     onEditProfile: () => void;
     conversations: Record<string, Message[]>;
     currentUserId: number;
+    onViewProfile?: (profile: UserProfile) => void;
 }
 
 const BanIcon: React.FC = () => (
@@ -25,7 +26,7 @@ const EditIcon: React.FC = () => (
 );
 
 
-const CompatibleModels: React.FC<CompatibleModelsProps> = ({ matches, onStartConversation, onGoBack, onBlock, onEditProfile, conversations, currentUserId }) => {
+const CompatibleModels: React.FC<CompatibleModelsProps> = ({ matches, onStartConversation, onGoBack, onBlock, onEditProfile, conversations, currentUserId, onViewProfile }) => {
     const previousMessageCounts = useRef<Record<string, number>>({});
 
     // Get unread message count for a specific match
@@ -110,6 +111,14 @@ const CompatibleModels: React.FC<CompatibleModelsProps> = ({ matches, onStartCon
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
+                                                {onViewProfile && (
+                                                    <button 
+                                                        onClick={() => onViewProfile(profile)}
+                                                        className="font-semibold text-sm py-2 px-4 rounded-lg transition-all bg-gray-700/50 hover:bg-gray-700 text-white border border-cyan-400/30"
+                                                    >
+                                                        View
+                                                    </button>
+                                                )}
                                                 <button 
                                                     onClick={() => onStartConversation(profile)}
                                                     className="font-semibold text-sm py-2 px-4 rounded-lg transition-all bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white hover:shadow-md hover:shadow-cyan-500/40"
