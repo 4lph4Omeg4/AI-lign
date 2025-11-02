@@ -126,6 +126,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const processedReadMessagesRef = useRef<Set<number>>(new Set());
 
     // Generate unique message IDs that won't conflict even across sessions
     const getUniqueMessageId = () => Date.now() + Math.random();
@@ -141,7 +142,13 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
     // Mark messages as read when first entering the chat or when new unread messages arrive
     useEffect(() => {
         const unreadMessages = messages.filter(msg => msg.sender === 'matched' && !msg.read);
-        if (unreadMessages.length > 0) {
+        // Filter out messages we've already processed
+        const newUnreadMessages = unreadMessages.filter(msg => !processedReadMessagesRef.current.has(msg.id));
+        
+        if (newUnreadMessages.length > 0) {
+            // Mark these messages as processed
+            newUnreadMessages.forEach(msg => processedReadMessagesRef.current.add(msg.id));
+            
             // Use setTimeout to avoid update during render
             const timer = setTimeout(() => {
                 onUpdateConversation(matchedProfile.id, prevMessages =>
@@ -152,7 +159,7 @@ const ChatView: React.FC<ChatViewProps> = ({ userProfile, matchedProfile, messag
             }, 100);
             return () => clearTimeout(timer);
         }
-    }, [messages.length, matchedProfile.id]);
+    }, [messages.length, matchedProfile.id, onUpdateConversation]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

@@ -267,6 +267,9 @@ const App: React.FC = () => {
                 const updatedUsers = [...allUsers];
                 updatedUsers[userIndex] = currentUser;
                 saveAllUsers(updatedUsers);
+            } else {
+                // User doesn't exist yet, add them to the database
+                saveAllUsers([...allUsers, currentUser]);
             }
         }
     }, [currentUser]);
@@ -529,14 +532,14 @@ const App: React.FC = () => {
         }
     };
 
-    const handleUpdateConversation = (matchedProfileId: number, updateFn: (prevMessages: Message[]) => Message[]) => {
+    const handleUpdateConversation = useCallback((matchedProfileId: number, updateFn: (prevMessages: Message[]) => Message[]) => {
         if (!currentUser) return;
         const conversationId = [currentUser.id, matchedProfileId].sort().join('-');
         setConversations(prev => ({
             ...prev,
             [conversationId]: updateFn(prev[conversationId] || [])
         }));
-    };
+    }, [currentUser]);
     
     const currentProfileForSwiping = swipeQueue[currentIndex];
 
