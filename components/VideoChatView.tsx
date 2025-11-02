@@ -228,7 +228,7 @@ const VideoChatView: React.FC<VideoChatViewProps> = ({ matchedProfile, onEndCall
             </div>
 
             {/* Local Video Preview */}
-            <div className="absolute bottom-24 right-4 z-20 group">
+            <div className="absolute bottom-24 right-4 z-40 group">
                 {isVideoOff ? (
                     <div className="w-32 h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border-2 border-cyan-400/50 shadow-2xl flex flex-col items-center justify-center">
                         <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">

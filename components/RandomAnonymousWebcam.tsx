@@ -242,7 +242,7 @@ const RandomAnonymousWebcam: React.FC<RandomAnonymousWebcamProps> = ({ currentUs
             </div>
 
             {/* Your Video (Small Square Overlay) */}
-            <div className="absolute bottom-24 right-4 z-20 group">
+            <div className="absolute bottom-24 right-4 z-40 group">
                 {isVideoOff ? (
                     <div className="w-32 h-32 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl border-2 border-purple-400/50 shadow-2xl flex items-center justify-center">
                         <div className="text-center">

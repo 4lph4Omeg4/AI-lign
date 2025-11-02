@@ -318,8 +318,9 @@ const EditProfile: React.FC<EditProfileProps> = ({ userProfile, onProfileUpdate,
                             <button
                                 type="button"
                                 onClick={() => {
-                                    if (confirm('Reset all users? This will clear all profiles and reload seed profiles. Your current profile will be kept.')) {
+                                    if (confirm('Reset all users? This will clear all profiles, matches, conversations and reload seed profiles. You will need to log in again.')) {
                                         window.localStorage.removeItem('ai-lign-all-users');
+                                        window.localStorage.removeItem('ai-lign-currentUser');
                                         window.localStorage.removeItem('ai-lign-conversations');
                                         alert('Database reset! Please refresh the page.');
                                         window.location.reload();
