@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { UserProfile, Message } from './types';
 
 import ProfileSetup from './components/ProfileSetup';
@@ -542,6 +542,15 @@ const App: React.FC = () => {
     }, [currentUser]);
     
     const currentProfileForSwiping = swipeQueue[currentIndex];
+    
+    // Memoize chat messages to prevent unnecessary re-renders
+    const chatMessages = useMemo(() => {
+        if (chattingWith && currentUser) {
+            const conversationId = [currentUser.id, chattingWith.id].sort().join('-');
+            return conversations[conversationId] || [];
+        }
+        return [];
+    }, [conversations, chattingWith, currentUser]);
 
     // MAIN RENDER LOGIC
     if (isLoading) {
@@ -565,9 +574,6 @@ const App: React.FC = () => {
             />;
         case 'chat':
             if (chattingWith) {
-                const conversationId = [currentUser.id, chattingWith.id].sort().join('-');
-                const chatMessages = conversations[conversationId] || [];
-                
                 return <ChatView 
                     userProfile={currentUser}
                     matchedProfile={chattingWith}
