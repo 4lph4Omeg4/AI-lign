@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { UserProfile, Message } from './types';
 
 import ProfileSetup from './components/ProfileSetup';
@@ -52,10 +52,19 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, React.Dispatch<Re
 
     const setValue: React.Dispatch<React.SetStateAction<T>> = (value) => {
         try {
-            const valueToStore = value instanceof Function ? value(storedValue) : value;
-            setStoredValue(valueToStore);
-            if (typeof window !== 'undefined') {
-                window.localStorage.setItem(key, JSON.stringify(valueToStore));
+            if (value instanceof Function) {
+                setStoredValue(prevValue => {
+                    const valueToStore = value(prevValue);
+                    if (typeof window !== 'undefined') {
+                        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+                    }
+                    return valueToStore;
+                });
+            } else {
+                setStoredValue(value);
+                if (typeof window !== 'undefined') {
+                    window.localStorage.setItem(key, JSON.stringify(value));
+                }
             }
         } catch (error) {
             console.error(`Error setting localStorage key "${key}":`, error);
@@ -90,6 +99,9 @@ const saveAllUsers = (users: UserProfile[]) => {
     }
 };
 
+// Stable empty messages array that can be safely shared
+const EMPTY_MESSAGES_ARRAY: Message[] = [];
+
 const App: React.FC = () => {
     // Persistent State for the CURRENTLY LOGGED IN user
     const [currentUser, setCurrentUser] = useLocalStorage<UserProfile | null>('ai-lign-currentUser', null);
@@ -109,9 +121,6 @@ const App: React.FC = () => {
     const [showPickupLineModal, setShowPickupLineModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState<{isOpen: boolean, onConfirm: () => void, title: string, message: string, confirmText: string}>({isOpen: false, onConfirm: () => {}, title: '', message: '', confirmText: 'Confirm'});
     const [toast, setToast] = useState({ show: false, message: '' });
-    
-    // Stable empty array ref to prevent unnecessary re-renders
-    const emptyMessagesArray = useRef<Message[]>([]);
 
     // Request notification permission on mount
     useEffect(() => {
@@ -530,7 +539,7 @@ const App: React.FC = () => {
             };
             setConversations(prev => ({
                 ...prev,
-                [conversationId]: [...(prev[conversationId] || emptyMessagesArray.current), userMessage]
+                [conversationId]: [...(prev[conversationId] || EMPTY_MESSAGES_ARRAY), userMessage]
             }));
         }
     };
@@ -540,7 +549,7 @@ const App: React.FC = () => {
         const conversationId = [currentUser.id, matchedProfileId].sort().join('-');
         setConversations(prev => ({
             ...prev,
-            [conversationId]: updateFn(prev[conversationId] || emptyMessagesArray.current)
+            [conversationId]: updateFn(prev[conversationId] || EMPTY_MESSAGES_ARRAY)
         }));
     }, [currentUser]);
     
@@ -550,9 +559,10 @@ const App: React.FC = () => {
     const chatMessages = useMemo(() => {
         if (chattingWith && currentUser) {
             const conversationId = [currentUser.id, chattingWith.id].sort().join('-');
-            return conversations[conversationId] || emptyMessagesArray.current;
+            const messages = conversations[conversationId];
+            return messages && messages.length > 0 ? messages : EMPTY_MESSAGES_ARRAY;
         }
-        return emptyMessagesArray.current;
+        return EMPTY_MESSAGES_ARRAY;
     }, [conversations, chattingWith, currentUser]);
 
     // MAIN RENDER LOGIC
